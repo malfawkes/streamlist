@@ -1,0 +1,22 @@
+# ---- Secrets / environment-specific config ----
+config.php
+.env
+
+# ---- OS junk ----
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- Editor/IDE junk ----
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ---- Logs ----
+*.log
+error_log
+
+# ---- Dependency folders (if you ever add these later) ----
+vendor/
+node_modules/
