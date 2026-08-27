@@ -29,8 +29,8 @@
         </nav>
 
         <!-- Login / Sign up -->
-        <div class="nav-cta">
-            <a href="login.php">Log In</a>
+        <div class="nav-auth">
+            <a href="login.php" class="login">Log In</a>
             <a href="register.php" class="btn btn-primary">Sign Up</a>
         </div>
     </div>
