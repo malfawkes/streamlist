@@ -189,3 +189,59 @@ header {
   line-height: 1.3;
   margin-bottom: var(--space-md);
 }
+
+/* TRENDING NOW */
+section.trending-now {
+  padding: var(--space-xl) 0;
+  background: var(--color-bg-alt);
+}
+
+.trending-now .section-description {
+  font-size: var(--fs-h2);
+  font-weight: var(--fw-bold);
+  margin: var(--space-xs) 0;
+}
+
+.trending-now .section-subdescription {
+  font-size: var(--fs-body);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-lg);
+}
+
+.trending-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.8rem;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.trending-now .card {
+  display: flex;
+  flex-direction: column;
+  border-radius: 24px;
+  padding: 1rem 1rem 1.2rem;
+  border: 5px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.trending-cards .card-image {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-sm);
+  border: #000000 solid 1px;
+}
+
+.trending-now .btn-browse-trending {
+  display: block;
+  width: fit-content;
+  margin: var(--space-lg) auto 0;
+  padding: 12px 24px;
+  color: var(--color-primary);
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+  font-weight: var(--fw-bold);
+  border: rgb(79, 78, 78) solid 1px;
+}

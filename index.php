@@ -11,7 +11,7 @@
                 <a href="#register" class="btn btn-primary get-started">Get Started Free</a>
                 <a href="#trending" class="btn btn-secondary browse-trending">Browse Trending</a>
             </div>
-            
+
             <div class="hero-stats">
                 <div>
                     <p class="hero-stat">12,000+</p>
@@ -32,6 +32,78 @@
             <img src="assets/images/#" alt="Hero image of a movie theater with a film reel">
         </div>
     </div>
+</section>
+
+<section class="trending-now">
+
+    <div class="wrap trending-wrap">
+
+        <h4 class="section-heading">Trending Now</h4>
+        <p class="section-description">What everyone's watching right now.</p>
+        <p class="section-subdescription">Updated daily, pulled straight from what's actually popular right now.</p>
+
+        <div class="trending-cards">
+            <div class="card first">
+                <div class="card-image">
+                    <span class="rating">10.0</span>
+                    <img src="assets/images/trending-1.jpg" alt="Trending image of movie">
+                </div>
+                <p>Movie Title 1</p>
+                <p>Genre | Date</p>
+            </div>
+            <div class="card second">
+                <div class="card-image">
+                    <span class="rating">10.0</span>
+                    <img src="assets/images/trending-2.jpg" alt="Trending image of movie">
+                </div>
+                <p>Movie Title 2</p>
+                <p>Genre | Date</p>
+            </div>
+            <div class="card third">
+                <div class="card-image">
+                    <span class="rating">10.0</span>
+                    <img src="assets/images/trending-3.jpg" alt="Trending image of movie">
+                </div>
+                <p>Movie Title 3</p>
+                <p>Genre | Date</p>
+            </div>
+            <div class="card fourth">
+                <div class="card-image">
+                    <span class="rating">10.0</span>
+                    <img src="assets/images/trending-4.jpg" alt="Trending image of movie">
+                </div>
+                <p>Movie Title 4</p>
+                <p>Genre | Date</p>
+            </div>
+            <div class="card fifth">
+                <div class="card-image">
+                    <span class="rating">10.0</span>
+                    <img src="assets/images/trending-5.jpg" alt="Trending image of movie">
+                </div>
+                <p>Movie Title 5</p>
+                <p>Genre | Date</p>
+            </div>
+        </div>
+
+        <div class="btn-browse-trending btn-secondary">
+            <a href="#trending">See All Trending Titles</a>
+        </div>
+    </div>
+</section>
+
+<section class="about">
+    
+    <div class="wrap about-wrap">
+        <img src="assets/img/canvas.png" alt="Image with streamlist logo" class="about-image">
+
+        <h4 class="section-heading">About Streamlist</h4>
+        <p class="section-description">Discovery first.</p>
+        <p class="section-description">Everything else follows.</p>
+        <p class="section-subdescription">StreamList brings trending and popular films together in one place, so you can browse, watch trailers, and build a curated watchlist all before the feature even begins.</p>
+    </div>
+
+</section>
+
 
 
 <?php include 'includes/footer.php'; ?>
