@@ -92,14 +92,29 @@
 </section>
 
 <section class="about">
-    
-    <div class="wrap about-wrap">
-        <img src="assets/img/canvas.png" alt="Image with streamlist logo" class="about-image">
 
-        <h4 class="section-heading">About Streamlist</h4>
-        <p class="section-description">Discovery first.</p>
-        <p class="section-description">Everything else follows.</p>
-        <p class="section-subdescription">StreamList brings trending and popular films together in one place, so you can browse, watch trailers, and build a curated watchlist all before the feature even begins.</p>
+    <div class="wrap about-wrap">
+        <div class="about-image-container">
+            <img src="assets/img/canvas.png" alt="Image with streamlist logo" class="about-image">
+        </div>
+
+        <div class="about-content">
+            <h4 class="section-heading">About Streamlist</h4>
+            <p class="section-description">Discovery first. <br> Everything else follows.</p>
+            <p class="section-subdescription first-para">StreamList brings trending and popular films together in one place, so you can browse, watch trailers, and build a curated watchlist all before the feature even begins.</p>
+            <p class="section-subdescription second-para">No clutter, no algorithm mystery box. Just a clear, calm way to find what to watch next, and remember what you already loved</p>
+
+            <div class="about-stats">
+                <div>
+                    <p class="about-stat-heading">2026</p>
+                    <p class="about-stat-description">Founded as a student project</p>
+                </div>
+                <div>
+                    <p class="about-stat-heading">4.8/5</p>
+                    <p class="about-stat-description">Average user rating</p>
+                </div>
+            </div>
+        </div>
     </div>
 
 </section>
