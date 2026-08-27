@@ -14,11 +14,24 @@
 
 <header>
     <div class="wrap nav">
-    <a href="index.php" class="logo">
-        <img src="assets/logo/g4.png" alt="Streamlist icon">
-        <span class="logo-text">Streamlist</span>
-    </a>
+        <!-- Logo: links back to homepage -->
+        <a href="index.php" class="logo">
+            <img src="assets/logo/g4.png" alt="Streamlist icon">
+            <span class="logo-text">Streamlist</span>
+        </a>
 
+        <!-- Main navigation links -->
+        <nav class="nav-links">
+            <a href="#trending">Trending</a>
+            <a href="#genres">Genres</a>
+            <a href="#pricing">Pricing</a>
+            <a href="#about">About</a>
+        </nav>
 
+        <!-- Login / Sign up -->
+        <div class="nav-cta">
+            <a href="login.php">Log In</a>
+            <a href="register.php" class="btn btn-primary">Sign Up</a>
+        </div>
     </div>
 </header>

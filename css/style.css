@@ -42,3 +42,8 @@
   --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.12);
   --transition-fast: 0.18s ease;
 }
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
