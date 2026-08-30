@@ -91,7 +91,7 @@
     </div>
 </section>
 
-<section class="about">
+<section class="about" id="about">
 
     <div class="wrap about-wrap">
         <div class="about-image-container">
