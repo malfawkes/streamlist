@@ -212,7 +212,7 @@ header {
 /* TRENDING NOW */
 section.trending-now {
   padding: var(--space-xl) 0;
-  background: var(--color-bg-alt);
+  background: var(--color-bg);
 }
 
 .trending-now .section-description {
@@ -321,7 +321,7 @@ section.about {
 
 /* WHY STREAMLIST */
 section.why-streamlist {
-  background: var(--color-bg-alt);
+  background: var(--color-bg);
 }
 
 .why-streamlist .why-content {
@@ -440,4 +440,32 @@ section.user-feedbacks {
 .user-feedbacks-cards .user-info .user-details .user-location {
   font-size: var(--fs-body);
   color: var(--color-text-muted);
+}
+
+/* CTA */
+.cta {
+  background: var(--color-bg);
+}
+
+.cta-wrap {
+  text-align: center;
+}
+
+.cta-wrap .section-description {
+  margin: var(--space-sm) 0;
+}
+
+.cta-wrap button {
+  background: var(--color-primary);
+  color: var(--color-secondary);
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* FOOTER */
+footer {
+  background: var(--color-primary);
+  color: var(--color-secondary);
+  padding: var(--space-lg) 0;
 }

@@ -195,4 +195,14 @@
 
 </section>
 
+<section class="cta">
+    <div class="wrap cta-wrap">
+        <h4 class="section-heading">READY TO START WATCHING</h4>
+        <p class="section-description">Join thousands of satisfied users and start your journey today!</p>
+        <p class="section-subdescription">Free to browse, free to watch trailers, forever. Upgrade whenever you want more.</p>
+        <button class="btn btn-primary get-started">Get Started Free</button>
+    </div>
+</section>
+
+
 <?php include 'includes/footer.php'; ?>
