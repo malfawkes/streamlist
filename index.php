@@ -29,7 +29,7 @@
         </div>
 
         <div class="hero-image">
-            <img src="assets/images/#" alt="Hero image of a movie theater with a film reel">
+            <img src="assets/img/canvas.png" alt="Hero image of a movie theater with a film reel">
         </div>
     </div>
 </section>
@@ -45,40 +45,40 @@
         <div class="trending-cards">
             <div class="card first">
                 <div class="card-image">
-                    <span class="rating">10.0</span>
-                    <img src="assets/images/trending-1.jpg" alt="Trending image of movie">
+                    <!-- <span class="rating">10.0</span> -->
+                    <img src="assets/img/canvas.png" alt="Trending image of movie">
                 </div>
                 <p>Movie Title 1</p>
                 <p>Genre | Date</p>
             </div>
             <div class="card second">
                 <div class="card-image">
-                    <span class="rating">10.0</span>
-                    <img src="assets/images/trending-2.jpg" alt="Trending image of movie">
+                    <!-- <span class="rating">10.0</span> -->
+                    <img src="assets/img/canvas.png" alt="Trending image of movie">
                 </div>
                 <p>Movie Title 2</p>
                 <p>Genre | Date</p>
             </div>
             <div class="card third">
                 <div class="card-image">
-                    <span class="rating">10.0</span>
-                    <img src="assets/images/trending-3.jpg" alt="Trending image of movie">
+                    <!-- <span class="rating">10.0</span> -->
+                    <img src="assets/img/canvas.png" alt="Trending image of movie">
                 </div>
                 <p>Movie Title 3</p>
                 <p>Genre | Date</p>
             </div>
             <div class="card fourth">
                 <div class="card-image">
-                    <span class="rating">10.0</span>
-                    <img src="assets/images/trending-4.jpg" alt="Trending image of movie">
+                    <!-- <span class="rating">10.0</span> -->
+                    <img src="assets/img/canvas.png" alt="Trending image of movie">
                 </div>
                 <p>Movie Title 4</p>
                 <p>Genre | Date</p>
             </div>
             <div class="card fifth">
                 <div class="card-image">
-                    <span class="rating">10.0</span>
-                    <img src="assets/images/trending-5.jpg" alt="Trending image of movie">
+                    <!-- <span class="rating">10.0</span> -->
+                    <img src="assets/img/canvas.png" alt="Trending image of movie">
                 </div>
                 <p>Movie Title 5</p>
                 <p>Genre | Date</p>
