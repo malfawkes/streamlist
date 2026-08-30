@@ -38,7 +38,7 @@
 
     <div class="wrap trending-wrap">
 
-        <h4 class="section-heading">Trending Now</h4>
+        <h4 class="section-heading">TRENDING NOW</h4>
         <p class="section-description">What everyone's watching right now.</p>
         <p class="section-subdescription">Updated daily, pulled straight from what's actually popular right now.</p>
 
@@ -99,7 +99,7 @@
         </div>
 
         <div class="about-content">
-            <h4 class="section-heading">About Streamlist</h4>
+            <h4 class="section-heading">ABOUT STREAMLIST</h4>
             <p class="section-description">Discovery first. <br> Everything else follows.</p>
             <p class="section-subdescription first-para">StreamList brings trending and popular films together in one place, so you can browse, watch trailers, and build a curated watchlist all before the feature even begins.</p>
             <p class="section-subdescription second-para">No clutter, no algorithm mystery box. Just a clear, calm way to find what to watch next, and remember what you already loved</p>
@@ -119,6 +119,35 @@
 
 </section>
 
+<section class="why-streamlist">
 
+    <div class="wrap why-wrap">
+        <div class="why-content">
+            <h4 class="section-heading">WHY STREAMLIST</h4>
+            <p class="section-description">Built around how people actually watch.</p>
+            <p class="section-subdescription">Three things we obsess over so you don't have to.</p>
+        </div>
+
+        <div class="why-cards">
+            <div class="card first">
+                <img src="assets/images/#" alt="Play icon">
+                <p class="card-heading">Instant Trailers</p>
+                <p class="card-description">Every title comes with its official trailer, one tap away, no digging through search.</p>
+            </div>
+            <div class="card second">
+                <img src="assets/images/#" alt="Play icon">
+                <p class="card-heading">Curated Watchlists</p>
+                <p class="card-description">Save what catches your eye, organize it your way, and pick up right where you left off.</p>
+            </div>
+            <div class="card third">
+                <img src="assets/images/#" alt="Play icon">
+                <p class="card-heading">Build Your Watchlist</p>
+                <p class="card-description">The more you favorite, the sharper your recommnedations get, genuinely, not just in theory.</p>
+            </div>
+        </div>
+
+    </div>
+    
+</section>
 
 <?php include 'includes/footer.php'; ?>
