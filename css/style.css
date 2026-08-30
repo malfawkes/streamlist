@@ -312,6 +312,7 @@ section.about {
 .about-stat-heading {
   font-size: var(--fs-h3);
   font-weight: var(--fw-bold);
+  margin-bottom: var(--space-xs);
 }
 
 .about-stat-description {
