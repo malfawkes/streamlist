@@ -41,9 +41,9 @@
         <div class="footer-bottom">
             <p>&copy; 2026 StreamList. All rights reserved.</p>
             <div class="footer-social">
-                <a href="#"><img src="assets/logo/#" alt="Facebook"></a>
-                <a href="#"><img src="assets/logo/#" alt="Twitter"></a>
-                <a href="#"><img src="assets/logo/#" alt="Instagram"></a>
+                <a href="#"><img src="assets/logo/facebook.png" alt="Facebook"></a>
+                <a href="#"><img src="assets/logo/twitter.png" alt="Twitter"></a>
+                <a href="#"><img src="assets/logo/instagram.png" alt="Instagram"></a>
             </div>
         </div>
         </div>

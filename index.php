@@ -130,17 +130,17 @@
 
         <div class="why-cards">
             <div class="card first">
-                <img src="assets/images/#" alt="Play icon">
+                <img src="assets/img/play.png" alt="Play icon">
                 <p class="card-heading">Instant Trailers</p>
                 <p class="card-description">Every title comes with its official trailer, one tap away, no digging through search.</p>
             </div>
             <div class="card second">
-                <img src="assets/images/#" alt="Play icon">
+                <img src="assets/img/play.png" alt="Play icon">
                 <p class="card-heading">Curated Watchlists</p>
                 <p class="card-description">Save what catches your eye, organize it your way, and pick up right where you left off.</p>
             </div>
             <div class="card third">
-                <img src="assets/images/#" alt="Play icon">
+                <img src="assets/img/play.png" alt="Play icon">
                 <p class="card-heading">Build Your Watchlist</p>
                 <p class="card-description">The more you favorite, the sharper your recommnedations get, genuinely, not just in theory.</p>
             </div>
@@ -158,10 +158,10 @@
 
         <div class="user-feedbacks-cards">
             <div class="card first">
-                <div class="star-rating">*****</div>
+                <div class="star-rating">***** <span>5.0</span></div>
                 <p class="feedback-text">"The trailers are perfect for deciding what to watch next. Love the curated lists too!"</p>
                 <div class="user-info">
-                    <img src="assets/images/#" alt="User avatar">
+                    <img src="assets/img/bear.png" alt="User avatar">
                     <div class="user-details">
                         <p class="user-name">- Alex M.</p>
                         <p class="user-location">New York, USA</p>
@@ -169,10 +169,10 @@
                 </div>
             </div>
             <div class="card second">
-                <div class="star-rating">*****</div>
+                <div class="star-rating">***** <span>5.0</span></div>
                 <p class="feedback-text">"The trailers are perfect for deciding what to watch next. Love the curated lists too!"</p>
                 <div class="user-info">
-                    <img src="assets/images/#" alt="User avatar">
+                    <img src="assets/img/chicken.png" alt="User avatar">
                     <div class="user-details">
                         <p class="user-name">- Alex M.</p>
                         <p class="user-location">New York, USA</p>
@@ -180,10 +180,10 @@
                 </div>
             </div>
             <div class="card third">
-                <div class="star-rating">*****</div>
+                <div class="star-rating">***** <span>5.0</span></div>
                 <p class="feedback-text">"The trailers are perfect for deciding what to watch next. Love the curated lists too!"</p>
                 <div class="user-info">
-                    <img src="assets/images/#" alt="User avatar">
+                    <img src="assets/img/meerkat.png" alt="User avatar">
                     <div class="user-details">
                         <p class="user-name">- Alex M.</p>
                         <p class="user-location">New York, USA</p>
@@ -203,6 +203,5 @@
         <button class="btn btn-primary get-started">Get Started Free</button>
     </div>
 </section>
-
 
 <?php include 'includes/footer.php'; ?>
