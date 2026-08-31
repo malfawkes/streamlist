@@ -17,7 +17,7 @@
         <!-- Logo: links back to homepage -->
         <a href="index.php" class="logo">
             <img src="assets/logo/g4.png" alt="Streamlist icon">
-            <span class="logo-text">Streamlist</span>
+            <span class="logo-text">StreamList</span>
         </a>
 
         <!-- Main navigation links -->

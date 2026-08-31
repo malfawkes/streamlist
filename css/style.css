@@ -136,6 +136,17 @@ header {
   font-weight: var(--fw-bold);
 }
 
+/* NAVBAR ON TOP */
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: var(--color-primary);
+  padding: 0.6rem;
+}
+
 /* HERO SECTION */
 .hero {
   color: var(--color-secondary);
