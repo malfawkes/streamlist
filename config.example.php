@@ -1,4 +1,5 @@
 <?php
+// config.example.php — safe to commit, no real secrets
 
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'streamlist');
