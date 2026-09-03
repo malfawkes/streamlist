@@ -77,6 +77,10 @@ section {
   padding: var(--space-xl) 0;
 }
 
+.btn {
+  cursor: pointer;
+}
+
 /* NAV */
 
 header {
@@ -174,7 +178,7 @@ header {
 }
 
 .btn-secondary {
-  background: var(--primary);
+  background: var(--color-primary);
   color: var(--color-border);
   padding: 10px 22px;
   border-radius: var(--radius-pill);

@@ -46,7 +46,7 @@
                 <a href="#"><img src="assets/logo/instagram.png" alt="Instagram"></a>
             </div>
         </div>
-        </div>
+    </div>
 
 </footer>
 
