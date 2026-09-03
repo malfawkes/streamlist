@@ -17,25 +17,32 @@ function validatePasswordLength(string $value, int $min): ?string
 
 function validateRegisterInput(array $post): array
 {
-    $name = trim($post['name'] ?? '');
-    $email = trim($post['email'] ?? '');
-    $password = trim($post['password'] ?? '');
+    $name     = trim($post['name'] ?? '');
+    $email    = trim($post['email'] ?? '');
+    $password = $post['password'] ?? '';      // NO trim — ever
 
-    $errors = array_values(array_filter([
-        validateRequired($name, 'Username'),
-        validateRequired($email, 'Email'),
-        validateEmailFormat($email),
-        validateRequired($password, 'Password'),
-        validatePasswordLength($password, 8),
-    ]));
+    $errors = [];
 
-    if(empty($errors)) {
-        $name = htmlspecialchars($name, ENT_QUOTES, 'UTF-8');
+    $errors[] = validateRequired($name, 'Username');
+    $errors[] = validateRequired($email, 'Email');
+    $errors[] = validateRequired($password, 'Password');
+
+    if ($email !== '') {
+        $errors[] = validateEmailFormat($email);
+    }
+    if (trim($password) !== '') {
+        $errors[] = validatePasswordLength($password, 8);
+    }
+
+    $errors = array_values(array_filter($errors));
+
+    if (empty($errors)) {
+        $name  = htmlspecialchars($name, ENT_QUOTES, 'UTF-8');
         $email = htmlspecialchars($email, ENT_QUOTES, 'UTF-8');
     }
 
     return [
-        'errors' => $errors,   
+        'errors' => $errors,
         'data'   => ['name' => $name, 'email' => $email, 'password' => $password],
     ];
 }
