@@ -274,10 +274,13 @@ section.trending-now {
   margin: var(--space-lg) auto 0;
   padding: 12px 24px;
   color: var(--color-primary);
-  border-radius: var(--radius-pill);
-  text-decoration: none;
-  font-weight: var(--fw-bold);
-  border: rgb(79, 78, 78) solid 1px;
+  background: var(--color-bg);
+}
+
+.trending-now .btn-browse-trending a {
+  /* border: none; */
+  background: var(--bg-alt);
+  color: var(--color-text);
 }
 
 .trending-now img {

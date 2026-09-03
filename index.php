@@ -85,8 +85,8 @@
             </div>
         </div>
 
-        <div class="btn-browse-trending btn-secondary">
-            <a href="#trending">See All Trending Titles</a>
+        <div class="btn-browse-trending">
+            <a href="#trending" class="btn-secondary">See All Trending Titles</a>
         </div>
     </div>
 </section>
