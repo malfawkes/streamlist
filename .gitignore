@@ -1,5 +1,5 @@
 # ---- Secrets / environment-specific config ----
-config.php
+configHidden.php
 .env
 
 # ---- OS junk ----

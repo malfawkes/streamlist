@@ -1,7 +1,7 @@
 <?php
 // action to process register - receives form, validates, inserts, redirects
 
-require_once __DIR__ . '/../database.php';
+require_once __DIR__ . '/../validation.php';
 require_once __DIR__ . '/../database/db.php';
 
 // Check if create button clicked
@@ -15,7 +15,7 @@ $result = validateRegisterInput($_POST);
 
 if (!empty($result['errors'])) {
     $message = implode(' ', $result['errors']);
-    header('Location: ../register.php?message=status=error&message=' . urlencode($message));
+    header('Location: ../register.php?status=error&message=' . urlencode($message));
     exit;
 }
 
@@ -38,13 +38,13 @@ try {
     header('Location: ../login.php?status=registered');
     exit;
 } catch (PDOException $e) {
-    if ($e->getCode() === '2300') {
+    if ($e->getCode() === '23000') {
         $friendly = 'That email is already registered. Try logging in instead.';
     } else {
         error_log('Register error: ' . $e->getMessage());
         $friendly = 'Something went wrong creating your account. Please try again.';
     }
     
-    header('Location: ../register.php?message=status=error&message=' . urlencode($friendly));
+    header('Location: ../register.php?status=error&message=' . urlencode($friendly));
     exit;
 }

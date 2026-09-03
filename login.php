@@ -22,7 +22,7 @@
             <label for="password">Password:</label> <br>
             <input type="password" name="password" id="password">
             <br>
-            <button type="submit">Login</button>
+            <button name="login" type="submit">Login</button>
         </form>
 
         <p>Don't have an account? <a href="register.php">Register</a></p>

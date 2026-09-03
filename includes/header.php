@@ -1,3 +1,8 @@
+<?php
+// includes/header.php — now also boots the session for every page
+require_once __DIR__ . '/auth.php';
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -30,8 +35,14 @@
 
         <!-- Login / Sign up -->
         <div class="nav-auth">
-            <a href="login.php" class="login">Log In</a>
-            <a href="register.php" class="btn btn-primary">Sign Up</a>
+            <?php if (isLoggedIn()): ?>
+                <span class="login">Hi, <?= htmlspecialchars($_SESSION['user_name']) ?></span>
+                <a href="watchlist.php" class="login">My Watchlist</a>
+                <a href="logout.php" class="btn btn-primary">Log Out</a>
+            <?php else: ?>
+                <a href="login.php" class="login">Log In</a>
+                <a href="register.php" class="btn btn-primary">Sign Up</a>
+            <?php endif; ?>
         </div>
     </div>
 </header>
