@@ -1,18 +1,28 @@
 <?php include 'includes/header.php'; ?>
 
+<?php
+ $status  = $_GET['status']  ?? null;
+ $message = $_GET['message'] ?? null;
+?>
+
 <section class='register-section'>
     <div class='wrap register-wrap'>
         <h1>Create New Account</h1>
+
+        <?php if ($status === 'error'): ?>
+            <p style="color: red;"><?= htmlspecialchars($message) ?></p>
+        <?php endif; ?>
+
         <!-- <p>Fill in the details to create your account</p> -->
         <form action="actions/process_register.php" method="post">
-            <label for="username">Username:</label> <br>
-            <input type="text" name="username" id="username" placeholder="Username" required>
+            <label for="name">Username:</label> <br>
+            <input type="text" name="name" id="name" placeholder="Username" required>
             <br>
             <label for="email">Email:</label> <br>
             <input type="email" name="email" id="email" placeholder="Email" required>
             <br>
             <label for="password">Password:</label> <br>
-            <input type="password" name="password" id="password" placeholder="Password" required>
+            <input minlength="8" type="password" name="password" id="password" placeholder="Password" required>
             <br>
             <button name="create-account" type="submit">Create Account</button>
         </form>
