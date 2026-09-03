@@ -27,7 +27,7 @@ require_once __DIR__ . '/auth.php';
 
         <!-- Main navigation links -->
         <nav class="nav-links">
-            <a href="#trending">Trending</a>
+            <a href="movies.php">Trending</a>
             <a href="#genres">Genres</a>
             <a href="#pricing">Pricing</a>
             <a href="#about">About</a>

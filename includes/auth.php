@@ -31,3 +31,12 @@ function currentUserId(): ?int
 {
     return isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : null;
 }
+
+function requireGuest(): void
+{
+    // Mirror of requireLogin(): bounces LOGGED-IN users away from auth pages
+    if (isLoggedIn()) {
+        header('Location: ' . SITE_URL . '/movies.php');
+        exit;
+    }
+}

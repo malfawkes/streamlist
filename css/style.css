@@ -81,6 +81,12 @@ section {
   cursor: pointer;
 }
 
+.premium-badge {
+  color: #b8860b;
+  font-weight: bold;
+  font-size: 0.75rem;
+}
+
 /* NAV */
 
 header {

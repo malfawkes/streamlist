@@ -7,7 +7,7 @@ require_once __DIR__ . '/../validation.php';      // reuse OUR validators!
 
 // 1. GUARD — the login button was pressed?
 if (!isset($_POST['login'])) {
-    header('Location: ../login.php');
+    header('Location: ../index.php');
     exit;
 }
 
@@ -32,27 +32,19 @@ try {
                            FROM users WHERE email = :email');
     $stmt->bindValue(':email', $email);
     $stmt->execute();
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);   // fetch() = ONE row, or false
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);  
 
-    // 4. VERIFY — both failures get ONE generic message.
-    //    "Email not found" would tell attackers which emails exist —
-    //    never confirm/deny which part was wrong.
-    //    password_verify(typed, stored_hash) — the hash NEVER un-hashes;
-    //    PHP re-hashes your input and compares.
     if (!$user || !password_verify($password, $user['password_hash'])) {
         header('Location: ../login.php?status=error&message='
              . urlencode('Wrong email or password.'));
         exit;
     }
 
-    // 5. SUCCESS — THE login moment. These values now live in the session
-    //    and every page can read them.
     $_SESSION['user_id']   = (int) $user['id'];
     $_SESSION['user_name'] = $user['name'];
     $_SESSION['user_tier'] = $user['tier'];
 
-    // Temporary landing page — we'll point this at movies.php next file
-    header('Location: ../index.php');
+    header('Location: ../movies.php');
     exit;
 
 } catch (PDOException $e) {

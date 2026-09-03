@@ -1,8 +1,11 @@
-<?php include 'includes/header.php'; ?>
-
 <?php
-    $status = $_GET['status'] ?? null;
-    $message = $_GET['message'] ?? null;
+require_once 'includes/auth.php';
+requireGuest();
+
+$status = $_GET['status'] ?? null;
+$message = $_GET['message'] ?? null;
+
+include 'includes/header.php';
 ?>
 
 <section class='login-section'>

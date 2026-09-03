@@ -158,34 +158,34 @@
 
         <div class="user-feedbacks-cards">
             <div class="card first">
-                <div class="star-rating">***** <span>5.0</span></div>
+                <div class="star-rating">★★★★★ <span>5.0</span></div>
                 <p class="feedback-text">"The trailers are perfect for deciding what to watch next. Love the curated lists too!"</p>
                 <div class="user-info">
                     <img src="assets/img/bear.png" alt="User avatar">
                     <div class="user-details">
-                        <p class="user-name">- Alex M.</p>
+                        <p class="user-name">Alex M.</p>
                         <p class="user-location">New York, USA</p>
                     </div>
                 </div>
             </div>
             <div class="card second">
-                <div class="star-rating">***** <span>5.0</span></div>
+                <div class="star-rating">★★★★★ <span>5.0</span></div>
                 <p class="feedback-text">"The trailers are perfect for deciding what to watch next. Love the curated lists too!"</p>
                 <div class="user-info">
                     <img src="assets/img/chicken.png" alt="User avatar">
                     <div class="user-details">
-                        <p class="user-name">- Alex M.</p>
+                        <p class="user-name">Alex M.</p>
                         <p class="user-location">New York, USA</p>
                     </div>
                 </div>
             </div>
             <div class="card third">
-                <div class="star-rating">***** <span>5.0</span></div>
+                <div class="star-rating">★★★★★ <span>5.0</span></div>
                 <p class="feedback-text">"The trailers are perfect for deciding what to watch next. Love the curated lists too!"</p>
                 <div class="user-info">
                     <img src="assets/img/meerkat.png" alt="User avatar">
                     <div class="user-details">
-                        <p class="user-name">- Alex M.</p>
+                        <p class="user-name">Alex M.</p>
                         <p class="user-location">New York, USA</p>
                     </div>
                 </div>
