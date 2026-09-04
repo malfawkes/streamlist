@@ -26,9 +26,6 @@ if ($movieId === false || $movieId < 1) {
     exit;
 }
 
-// ⭐ user_id comes from the SESSION — server-trusted, never from the form.
-// (If it came from a form field, anyone could edit it and fill OTHER
-// people's watchlists. Same rule for DELETE below.)
  $userId = currentUserId();
 
 try {

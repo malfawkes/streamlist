@@ -38,7 +38,12 @@ include 'includes/header.php';
 <?php endif; ?>
 
 <?php if (empty($watchlist)): ?>
-    <p>No movies yet — <a href="movies.php">browse trending</a> to start one.</p>
+    <div class="empty-watchlist">
+        <h2>Your watchlist is empty</h2>
+        <p>Find something worth watching — browse what's trending right now.</p>
+        <a href="movies.php" class="btn btn-primary">Browse Trending Movies</a>
+        <!-- when search.php exists, add: <a href="search.php" class="btn btn-secondary">Search Movies</a> -->
+    </div>
 <?php else: ?>
     <div class="trending-cards">
         <?php foreach ($watchlist as $movie): ?>
@@ -53,7 +58,8 @@ include 'includes/header.php';
                     <p class="premium-badge">★ PREMIUM</p>
                 <?php endif; ?>
 
-                <form method="post" action="actions/remove_from_watch_list.php">
+                <form method="post" action="actions/remove_from_watch_list.php"
+                      onsubmit="return confirm('Remove this movie from your watchlist?');">
                     <input type="hidden" name="movie_id" value="<?= (int) $movie['id'] ?>">
                     <button name="remove-from-watchlist" type="submit">✕ Remove</button>
                 </form>

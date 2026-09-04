@@ -11,11 +11,18 @@ require_once __DIR__ . '/database/db.php';
              ORDER BY release_date DESC')
     ->fetchAll(PDO::FETCH_ASSOC);
 
+ $status  = $_GET['status']  ?? null;
+ $message = $_GET['message'] ?? null;
+
 include 'include/header.php';
 ?>
 
 <h1>Trending Now</h1>
 <p>Browse what's new. Add anything to your watchlist.</p>
+
+<?php if ($status === 'error'): ?>
+    <p style="color: red;"><?= htmlspecialchars($message) ?></p>
+<?php endif; ?>
 
 <section>
     <div class="trending-cards">
