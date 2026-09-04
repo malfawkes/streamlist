@@ -14,7 +14,7 @@ require_once __DIR__ . '/database/db.php';
  $status  = $_GET['status']  ?? null;
  $message = $_GET['message'] ?? null;
 
-include 'include/header.php';
+include 'includes/header.php';
 ?>
 
 <h1>Trending Now</h1>
@@ -48,4 +48,4 @@ include 'include/header.php';
     </div>
 </section>
 
-<?php include 'include/footer.php'; ?>
+<?php include 'includes/footer.php'; ?>
