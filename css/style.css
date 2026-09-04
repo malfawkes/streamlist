@@ -549,6 +549,21 @@ footer {
   margin: 8px;
 }
 
+/* IMAGE */
+.hero-image {
+  position: relative; /* anchor for the info overlay */
+}
+.hero-movie-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.75); /* your brand black, 75% tint */
+  color: var(--color-text-inverse);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+}
+
 /* ////////////// */
 .empty-watchlist {
   margin: 2rem auto;

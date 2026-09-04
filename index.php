@@ -1,4 +1,30 @@
-<?php include 'includes/header.php'; ?>
+<?php
+require_once 'database/db.php';
+
+// Count total movies
+$movieCount = $pdo->query('SELECT COUNT(*) FROM movies')->fetchColumn();
+
+// HERO: the highest-rated movie that has a backdrop image
+// (no user input → query() shortcut, same as movies.php)
+$hero = $pdo->query(
+    'SELECT id, title, overview, rating, backdrop_path
+     FROM movies
+     WHERE backdrop_path IS NOT NULL AND rating IS NOT NULL
+     ORDER BY rating DESC
+     LIMIT 1'
+)->fetch(PDO::FETCH_ASSOC);      // fetch() = ONE row — exactly one hero
+
+// TRENDING strip: the 5 newest releases
+$trending = $pdo->query(
+    'SELECT id, title, poster_path, release_date, rating, is_premium
+     FROM movies
+     ORDER BY release_date DESC
+     LIMIT 5'
+)->fetchAll(PDO::FETCH_ASSOC);
+
+include 'includes/header.php';
+?>
+
 
 <section class="hero">
     <div class="wrap hero-wrap">
@@ -14,7 +40,7 @@
 
             <div class="hero-stats">
                 <div>
-                    <p class="hero-stat">12,000+</p>
+                    <p class="hero-stat"><?= $movieCount ?></p>
                     <p class="hero-stat-label">Movies Indexed</p>
                 </div>
                 <div>
@@ -29,7 +55,18 @@
         </div>
 
         <div class="hero-image">
-            <img src="assets/img/canvas.png" alt="Hero image of a movie theater with a film reel">
+            <?php if ($hero): ?>
+            <!-- w780 = wider size for backdrops (posters use w342) -->
+            <img src="https://image.tmdb.org/t/p/w780<?= htmlspecialchars($hero['backdrop_path']) ?>"
+                alt="<?= htmlspecialchars($hero['title']) ?>">
+            <div class="hero-movie-info">
+                <h2><?= htmlspecialchars($hero['title']) ?></h2>
+                <p class="hero-movie-rating">★ <?= number_format((float) $hero['rating'], 1) ?> / 10</p>
+                <p><?= htmlspecialchars(mb_substr($hero['overview'] ?? '', 0, 180)) ?>…</p>
+            </div>
+            <?php else: ?>
+                <img src="assets/img/canvas.png" alt="Hero image of a movie theater with a film reel">
+            <?php endif; ?>
         </div>
     </div>
 </section>
@@ -43,47 +80,27 @@
         <p class="section-subdescription">Updated daily, pulled straight from what's actually popular right now.</p>
 
         <div class="trending-cards">
-            <div class="card first">
-                <div class="card-image">
-                    <!-- <span class="rating">10.0</span> -->
-                    <img src="assets/img/canvas.png" alt="Trending image of movie">
-                </div>
-                <p>Movie Title 1</p>
-                <p>Genre | Date</p>
+    <?php foreach ($trending as $movie): ?>
+        <div class="card">
+            <div class="card-image">
+                <img src="<?= $movie['poster_path']
+                        ? 'https://image.tmdb.org/t/p/w342' . htmlspecialchars($movie['poster_path'])
+                        : 'assets/img/canvas.png' ?>"
+                     alt="Poster for <?= htmlspecialchars($movie['title']) ?>">
             </div>
-            <div class="card second">
-                <div class="card-image">
-                    <!-- <span class="rating">10.0</span> -->
-                    <img src="assets/img/canvas.png" alt="Trending image of movie">
-                </div>
-                <p>Movie Title 2</p>
-                <p>Genre | Date</p>
-            </div>
-            <div class="card third">
-                <div class="card-image">
-                    <!-- <span class="rating">10.0</span> -->
-                    <img src="assets/img/canvas.png" alt="Trending image of movie">
-                </div>
-                <p>Movie Title 3</p>
-                <p>Genre | Date</p>
-            </div>
-            <div class="card fourth">
-                <div class="card-image">
-                    <!-- <span class="rating">10.0</span> -->
-                    <img src="assets/img/canvas.png" alt="Trending image of movie">
-                </div>
-                <p>Movie Title 4</p>
-                <p>Genre | Date</p>
-            </div>
-            <div class="card fifth">
-                <div class="card-image">
-                    <!-- <span class="rating">10.0</span> -->
-                    <img src="assets/img/canvas.png" alt="Trending image of movie">
-                </div>
-                <p>Movie Title 5</p>
-                <p>Genre | Date</p>
-            </div>
+            <p><?= htmlspecialchars($movie['title']) ?></p>
+            <p>
+                <?= date('Y', strtotime($movie['release_date'] ?: 'now')) ?>
+                <?php if ($movie['rating'] !== null): ?>
+                    | ★ <?= number_format((float) $movie['rating'], 1) ?>
+                <?php endif; ?>
+            </p>
+            <?php if ($movie['is_premium']): ?>
+                <p class="premium-badge">★ PREMIUM</p>
+            <?php endif; ?>
         </div>
+    <?php endforeach; ?>
+</div>
 
         <div class="btn-browse-trending">
             <a href="movies.php" class="btn-secondary">See All Trending Titles</a>

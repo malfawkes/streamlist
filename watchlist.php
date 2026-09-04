@@ -49,7 +49,9 @@ include 'includes/header.php';
         <?php foreach ($watchlist as $movie): ?>
             <div class="card">
                 <div class="card-image">
-                    <img src="assets/img/canvas.png"
+                    <img src="<?= $movie['poster_path']
+                                ? 'https://image.tmdb.org/t/p/w342' . htmlspecialchars($movie['poster_path'])
+                                : 'assets/img/canvas.png' ?>"
                          alt="Poster for <?= htmlspecialchars($movie['title']) ?>">
                 </div>
                 <p><?= htmlspecialchars($movie['title']) ?></p>
