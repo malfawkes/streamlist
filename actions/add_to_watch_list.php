@@ -22,7 +22,7 @@ if (!isset($_POST['add-to-watchlist'])) {
 
 // Allow-list (open-redirect defense): only OUR pages are valid targets.
 // str_starts_with handles "search.php?q=..." style targets.
- $allowed = ['movies.php', 'watchlist.php', 'search.php'];
+ $allowed = ['movies.php', 'watchlist.php', 'search.php', 'movie.php'];
  $isAllowed = false;
 foreach ($allowed as $prefix) {
     if (str_starts_with($redirectTo, $prefix)) {

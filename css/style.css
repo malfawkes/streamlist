@@ -573,3 +573,19 @@ footer {
 .empty-watchlist p {
   margin: var(--space-lg) 0;
 }
+
+/* Movie Card */
+.movie-backdrop {
+  width: 100%;
+  border-radius: var(--radius-md);
+}
+.movie-trailer {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: none;
+}
+.pagination {
+  display: flex;
+  gap: var(--space-md);
+  padding: var(--space-lg) 0;
+}

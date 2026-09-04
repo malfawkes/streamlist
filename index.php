@@ -35,7 +35,7 @@ include 'includes/header.php';
 
             <div class="hero-buttons">
                 <a href="../register.php" class="btn btn-primary get-started">Get Started Free</a>
-                <a href="../movies.php" class="btn btn-secondary browse-trending">Browse Trending</a>
+                <a href="movies.php" class="btn btn-secondary browse-trending">Browse Trending</a>
             </div>
 
             <div class="hero-stats">

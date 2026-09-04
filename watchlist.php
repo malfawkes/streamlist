@@ -54,7 +54,7 @@ include 'includes/header.php';
                                 : 'assets/img/canvas.png' ?>"
                          alt="Poster for <?= htmlspecialchars($movie['title']) ?>">
                 </div>
-                <p><?= htmlspecialchars($movie['title']) ?></p>
+                <p><a href="movie.php?id=<?= (int) $movie['id'] ?>"><?= htmlspecialchars($movie['title']) ?></a></p>
                 <p><?= date('Y', strtotime($movie['release_date'])) ?></p>
                 <?php if ($movie['is_premium']): ?>
                     <p class="premium-badge">★ PREMIUM</p>
