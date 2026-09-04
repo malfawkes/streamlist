@@ -22,17 +22,20 @@ include 'include/header.php';
         <?php foreach ($movies as $movie): ?>
             <div class="card">
                 <div class="card-image">
-                    <img src="assets/img/canvas.png"
-                        alt="Poster for <?= htmlspecialchars($movie['title']) ?>">
+                    <img src="assets/img/canvas.png" alt="Poster for <?= htmlspecialchars($movie['title']) ?>">
                 </div>
                 <p><?= htmlspecialchars($movie['title']) ?></p>
-
-                <!-- date('Y') extracts just the year from '2025-06-13' -->
                 <p><?= date('Y', strtotime($movie['release_date'])) ?></p>
-
                 <?php if ($movie['is_premium']): ?>
                     <p class="premium-badge">★ PREMIUM</p>
                 <?php endif; ?>
+
+                <!-- NEW: add form per card -->
+                <form method="post" action="actions/add_to_watch_list.php">
+                    <!-- hidden input: data the user never types, rides along on submit -->
+                    <input type="hidden" name="movie_id" value="<?= (int) $movie['id'] ?>">
+                    <button name="add-to-watchlist" type="submit">+ Watchlist</button>
+                </form>
             </div>
         <?php endforeach; ?>
     </div>
