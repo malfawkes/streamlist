@@ -31,10 +31,19 @@ require_once __DIR__ . '/auth.php';
             <a href="#genres">Genres</a>
             <a href="#pricing">Pricing</a>
             <a href="#about">About</a>
+            
         </nav>
+
+
 
         <!-- Login / Sign up -->
         <div class="nav-auth">
+            <?php if (isLoggedIn()): ?>
+                <form method="get" action="search.php" class="nav-search">
+                    <input type="text" name="q" placeholder="Search...">
+                </form>
+            <?php endif; ?>
+            
             <?php if (isLoggedIn()): ?>
                 <span class="login">Hi, <?= htmlspecialchars($_SESSION['user_name']) ?></span>
                 <a href="watchlist.php" class="login">My Watchlist</a>

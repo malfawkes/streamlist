@@ -17,12 +17,32 @@ if (!isset($_POST['add-to-watchlist'])) {
     exit;
 }
 
+// ── Where to send the user back ─────────────────────────
+ $redirectTo = $_POST['redirect'] ?? 'movies.php';
+
+// Allow-list (open-redirect defense): only OUR pages are valid targets.
+// str_starts_with handles "search.php?q=..." style targets.
+ $allowed = ['movies.php', 'watchlist.php', 'search.php'];
+ $isAllowed = false;
+foreach ($allowed as $prefix) {
+    if (str_starts_with($redirectTo, $prefix)) {
+        $isAllowed = true;
+        break;
+    }
+}
+if (!$isAllowed) {
+    $redirectTo = 'movies.php';
+}
+
+// The glue: "&" if the target already has a "?", else "?"
+ $sep = (strpos($redirectTo, '?') !== false) ? '&' : '?';
+
 // movie_id comes from a form hidden input → USER-EDITABLE → validate it!
 // Arrives as a string "3" → filter_var validates AND converts to int
  $movieId = filter_var($_POST['movie_id'] ?? '', FILTER_VALIDATE_INT);
 
 if ($movieId === false || $movieId < 1) {
-    header('Location: ../movies.php?status=error&message=' . urlencode('Invalid movie.'));
+    header('Location: ../' . $redirectTo . $sep . 'status=error&message=' . urlencode('Invalid movie.'));
     exit;
 }
 
@@ -36,14 +56,13 @@ try {
     $movie = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$movie) {
-        header('Location: ../movies.php?status=error&message=' . urlencode('Movie not found.'));
+        header('Location: ../' . $redirectTo . $sep . 'status=error&message=' . urlencode('Movie not found.'));
         exit;
     }
 
     // 2. Tier gate: free user + premium movie → blocked
     if ($_SESSION['user_tier'] !== 'premium' && $movie['is_premium']) {
-        header('Location: ../movies.php?status=error&message='
-             . urlencode('That title is for StreamList Plus members. Upgrade to add it.'));
+        header('Location: ../' . $redirectTo . $sep . 'status=error&message=' . urlencode('That title is for StreamList Plus members. Upgrade to add it.'));
         exit;
     }
 
@@ -54,8 +73,7 @@ try {
         $stmt->execute();
 
         if ((int) $stmt->fetchColumn() >= FREE_TIER_WATCHLIST_LIMIT) {
-            header('Location: ../movies.php?status=error&message='
-                 . urlencode('Free watchlist is full (20 titles). Upgrade for unlimited.'));
+            header('Location: ../' . $redirectTo . $sep . 'status=error&message=' . urlencode('Free watchlist is full (20 titles). Upgrade for unlimited.'));
             exit;
         }
     }
@@ -79,6 +97,6 @@ try {
         error_log('Watchlist add error: ' . $e->getMessage());
         $friendly = 'Could not add to watchlist. Please try again.';
     }
-    header('Location: ../movies.php?status=error&message=' . urlencode($friendly));
+    header('Location: ../' . $redirectTo . $sep . 'status=error&message=' . urlencode($friendly));
     exit;
 }

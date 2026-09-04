@@ -5,14 +5,14 @@ requireLogin();
 
 require_once __DIR__ . '/database/db.php';
 
- $movies = $pdo
+$movies = $pdo
     ->query('SELECT id, title, poster_path, release_date, is_premium
              FROM movies
              ORDER BY release_date DESC')
     ->fetchAll(PDO::FETCH_ASSOC);
 
- $status  = $_GET['status']  ?? null;
- $message = $_GET['message'] ?? null;
+$status  = $_GET['status']  ?? null;
+$message = $_GET['message'] ?? null;
 
 include 'includes/header.php';
 ?>

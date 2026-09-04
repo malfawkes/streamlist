@@ -42,7 +42,7 @@ include 'includes/header.php';
         <h2>Your watchlist is empty</h2>
         <p>Find something worth watching — browse what's trending right now.</p>
         <a href="movies.php" class="btn btn-primary">Browse Trending Movies</a>
-        <!-- when search.php exists, add: <a href="search.php" class="btn btn-secondary">Search Movies</a> -->
+        <a href="search.php" class="btn btn-secondary">Search Movies</a>
     </div>
 <?php else: ?>
     <div class="trending-cards">

@@ -1,0 +1,76 @@
+<?php
+// search.php — search movies by title. GET-based (read-only, bookmarkable).
+
+require_once 'includes/auth.php';
+requireLogin();
+
+require_once 'database/db.php';
+
+// Read the search term — the form builds ?q=... automatically
+$term = trim($_GET['q'] ?? '');
+
+$movies = [];                    
+
+if ($term !== '') {
+    // USER INPUT → prepare + bindValue. Even on GET. Even for "just search".
+    $stmt = $pdo->prepare(
+        'SELECT id, title, poster_path, release_date, is_premium
+         FROM movies
+         WHERE title LIKE :term
+         ORDER BY release_date DESC'
+    );
+    // The wildcards wrap the USER'S term — see the LIKE lesson below
+    $stmt->bindValue(':term', '%' . $term . '%');
+    $stmt->execute();
+    $movies = $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+$status  = $_GET['status']  ?? null;     
+$message = $_GET['message'] ?? null;     
+
+include 'includes/header.php';
+?>
+
+<section class='search-section'>
+    <h1>Search</h1>
+
+    <?php if ($status === 'error'): ?>
+        <p style="color: red;"><?= htmlspecialchars($message) ?></p>
+    <?php endif; ?>
+
+    <form method="get" action="search.php">
+        <input type="text" name="q"
+            value="<?= htmlspecialchars($term) ?>"
+            placeholder="Search movies by title..." autofocus>
+        <button type="submit">Search</button>
+    </form>
+
+    <?php if ($term !== '' && empty($movies)): ?>
+        <p>No movies found for "<?= htmlspecialchars($term) ?>".</p>
+    <?php elseif (!empty($movies)): ?>
+        <p><?= count($movies) ?> result(s) for "<?= htmlspecialchars($term) ?>":</p>
+        <div class="trending-cards">
+            <?php foreach ($movies as $movie): ?>
+                <div class="card">
+                <div class="card-image">
+                    <img src="assets/img/canvas.png" alt="Poster for <?= htmlspecialchars($movie['title']) ?>">
+                </div>
+                <p><?= htmlspecialchars($movie['title']) ?></p>
+                <p><?= date('Y', strtotime($movie['release_date'])) ?></p>
+                <?php if ($movie['is_premium']): ?>
+                    <p class="premium-badge">★ PREMIUM</p>
+                <?php endif; ?>
+
+                <form method="post" action="actions/add_to_watch_list.php">
+                    <input type="hidden" name="movie_id" value="<?= (int) $movie['id'] ?>">
+                    <input type="hidden" name="redirect" value="search.php?q=<?= urlencode($term) ?>">
+                    <button name="add-to-watchlist" type="submit">+ Watchlist</button>
+                </form>
+            <?php endforeach; ?>
+        </div>
+    <?php else: ?>
+        <p>Type a movie title, then press <strong>Enter</strong> or click Search.</p>
+    <?php endif; ?>
+
+</section>
+<?php include 'includes/footer.php'; ?>

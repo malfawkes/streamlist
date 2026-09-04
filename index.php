@@ -8,8 +8,8 @@
             <p class="hero-description">Browse trending titles, watch official trailers, and build a watchlist that's actually yours all in one calm, uncluttered place.</p>
 
             <div class="hero-buttons">
-                <a href="#register" class="btn btn-primary get-started">Get Started Free</a>
-                <a href="#trending" class="btn btn-secondary browse-trending">Browse Trending</a>
+                <a href="../register.php" class="btn btn-primary get-started">Get Started Free</a>
+                <a href="../movies.php" class="btn btn-secondary browse-trending">Browse Trending</a>
             </div>
 
             <div class="hero-stats">
@@ -86,7 +86,7 @@
         </div>
 
         <div class="btn-browse-trending">
-            <a href="#trending" class="btn-secondary">See All Trending Titles</a>
+            <a href="movies.php" class="btn-secondary">See All Trending Titles</a>
         </div>
     </div>
 </section>

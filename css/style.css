@@ -548,3 +548,13 @@ footer {
   width: 32px;
   margin: 8px;
 }
+
+/* ////////////// */
+.empty-watchlist {
+  margin: 2rem auto;
+  text-align: center;
+}
+
+.empty-watchlist p {
+  margin: var(--space-lg) 0;
+}
