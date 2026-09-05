@@ -40,3 +40,19 @@ function requireGuest(): void
         exit;
     }
 }
+
+
+function isAdmin(): bool
+{
+    // ?? 0: sessions from before this feature lack the key → safely non-admin
+    return ($_SESSION['is_admin'] ?? 0) === 1;
+}
+
+function requireAdmin(): void
+{
+    requireLogin();
+    if (!isAdmin()) {
+        http_response_code(403);
+        die('Forbidden: Administrators only.');
+    }
+}

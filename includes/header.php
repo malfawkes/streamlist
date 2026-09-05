@@ -28,19 +28,13 @@ require_once __DIR__ . '/auth.php';
         <nav class="nav-links">
             <a href="movies.php">Trending</a>
             <a href="genres.php">Genres</a>
+            <?php if (isAdmin()): ?>
+                <a href="admin.php">Admin</a>
+            <?php endif; ?>
             <a href="upgrade.php">Pricing</a>
-            <!-- index.php#about, not #about: a bare #anchor jumps within the
-                 CURRENT page — which has no #about section. Cross-page anchors
-                 need the page in the URL. -->
             <a href="index.php#about">About</a>
         </nav>
 
-        <!-- Search: every page, for logged-in users.
-             method="get" → browser builds search.php?q=… itself.
-             value= pre-fills the box with the current term — on the search
-             page itself, the box shows what you searched.
-             htmlspecialchars because $_GET is user-editable — the exact
-             value-attribute XSS wall from search.php. -->
         <?php if (isLoggedIn()): ?>
             <form method="get" action="search.php" class="nav-search">
                 <input type="text" name="q" placeholder="Search movies…"

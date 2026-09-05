@@ -1084,3 +1084,95 @@ h2 {
 .genres-page .genre-cards {
   margin-bottom: var(--space-md);
 }
+
+/* ADMIN  */
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--space-sm);
+  margin: var(--space-md) 0 var(--space-lg);
+}
+.stat-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-md);
+}
+.stat-value {
+  font-size: var(--fs-h2);
+  font-weight: var(--fw-bold);
+}
+.stat-label {
+  font-size: var(--fs-small);
+  color: var(--color-text-muted);
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  margin-bottom: var(--space-lg);
+}
+.admin-table th,
+.admin-table td {
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+  font-size: var(--fs-small);
+  vertical-align: middle;
+}
+.admin-table th {
+  background: var(--color-bg-alt);
+}
+.admin-table form {
+  display: inline-block;
+  margin-right: 6px;
+}
+
+.admin-table button {
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 6px 12px;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-bold);
+  cursor: pointer;
+}
+.admin-table .admin-danger {
+  background: #c62828;
+}
+.admin-badge {
+  color: #b8860b;
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-small);
+}
+.admin-muted {
+  color: var(--color-text-muted);
+}
+
+.admin-movie-search {
+  display: flex;
+  gap: var(--space-xs);
+  margin: var(--space-sm) 0;
+}
+.admin-movie-search input {
+  padding: 10px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-body);
+}
+.admin-movie-search button {
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 10px 20px;
+  font-weight: var(--fw-bold);
+  cursor: pointer;
+}
+
+.upgrade-message {
+  margin-inline: auto;
+}

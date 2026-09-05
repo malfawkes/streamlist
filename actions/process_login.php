@@ -28,7 +28,7 @@ if (!empty($errors)) {
 
 // 3. FETCH — one user by email
 try {
-    $stmt = $pdo->prepare('SELECT id, name, email, password_hash, tier
+    $stmt = $pdo->prepare('SELECT id, name, email, password_hash, tier, is_admin
                            FROM users WHERE email = :email');
     $stmt->bindValue(':email', $email);
     $stmt->execute();
@@ -43,6 +43,7 @@ try {
     $_SESSION['user_id']   = (int) $user['id'];
     $_SESSION['user_name'] = $user['name'];
     $_SESSION['user_tier'] = $user['tier'];
+    $_SESSION['is_admin']  = (int) ($user['is_admin'] ?? 0);
 
     header('Location: ../movies.php');
     exit;

@@ -27,16 +27,16 @@ $isPremium = ($_SESSION['user_tier'] ?? 'free') === 'premium';
 include 'includes/header.php';
 ?>
 
-<section class="wrap">
+<section class="wrap upgrade-page">
 
     <h1 class="streamlist-plus-h1">StreamList Plus</h1>
 
     <?php if ($status === 'upgraded'): ?>
-        <p class="message message-success">You're now a Plus member unlimited watchlists and premium titles unlocked!</p>
+        <p class="upgrade-message message message-success">You're now a Plus member unlimited watchlists and premium titles unlocked!</p>
     <?php elseif ($status === 'downgraded'): ?>
-        <p class="message message-success">You're back on the Free plan.</p>
+        <p class="upgrade-message message message-success">You're back on the Free plan.</p>
     <?php elseif ($status === 'error'): ?>
-        <p class="message message-error"><?= htmlspecialchars($message) ?></p>
+        <p class="upgrade-message message message-error"><?= htmlspecialchars($message) ?></p>
     <?php elseif ($status === 'blocked' && $blockedTitle): ?>
         <p class="message message-error"><strong><?= htmlspecialchars($blockedTitle) ?></strong>
         is a Plus title upgrade below to unlock it.</p>
