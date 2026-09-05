@@ -439,7 +439,7 @@ section.user-feedbacks {
 }
 
 .user-feedbacks-cards .card {
-  border: 3px solid var(--color-text-muted);
+  /* border: 3px solid var(--color-text-muted); */
   border-radius: 24px;
   padding: 2rem;
 }
@@ -765,10 +765,6 @@ footer {
   border-radius: var(--radius-md);
 }
 
-.search-title {
-  margin-top: var(--space-xl);
-}
-
 /* Message boxes — replacing all inline-styled <p> messages */
 .message {
   max-width: 640px;
@@ -857,7 +853,7 @@ footer {
   padding: 0 24px;
 }
 .genre-cards {
-  padding: 0 24px;
+  padding: var(--space-md) 0;
 }
 
 /* Sections without a .wrap child get side padding
@@ -961,4 +957,10 @@ h2 {
   font-size: var(--fs-small);
   font-weight: var(--fw-bold);
   margin: 0;
+}
+
+.wrap {
+  max-width: var(--max-width); /* 1600px — the design's content width */
+  margin: 0 auto; /* centers it in the viewport */
+  padding: 0 24px; /* ← THE left/right padding you're asking for */
 }

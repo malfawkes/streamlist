@@ -35,35 +35,37 @@ foreach ($genres as $g) {
 include 'includes/header.php';
 ?>
 
-<h1>Browse by Genre</h1>
-<p>Pick a mood — each genre links straight to its movies.</p>
+<section class="wrap">
 
-<?php if (empty($genres)): ?>
-    <p>No genres loaded yet — run the seed script.</p>
-<?php else: ?>
+    <h1>Browse by Genre</h1>
+    <p>Pick a mood each genre links straight to its movies.</p>
 
-<div class="genre-cards">
-    <?php foreach ($genres as $g): ?>
-        <div class="card genre-card">
-            <h2><?= htmlspecialchars($g['name']) ?></h2>
-            <p><?= (int) $g['movie_count'] ?> movies</p>
+    <?php if (empty($genres)): ?>
+        <p>No genres loaded yet run the seed script.</p>
+    <?php else: ?>
 
-            <div class="genre-posters">
-                <?php foreach ($samples[(int) $g['id']] as $s): ?>
-                    <img src="<?= $s['poster_path']
-                            ? 'https://image.tmdb.org/t/p/w92' . htmlspecialchars($s['poster_path'])
-                            : 'assets/img/canvas.png' ?>"
-                         alt="<?= htmlspecialchars($s['title']) ?>">
-                <?php endforeach; ?>
+    <div class="genre-cards">
+        <?php foreach ($genres as $g): ?>
+            <div class="card genre-card">
+                <h2><?= htmlspecialchars($g['name']) ?></h2>
+                <p><?= (int) $g['movie_count'] ?> movies</p>
+
+                <div class="genre-posters">
+                    <?php foreach ($samples[(int) $g['id']] as $s): ?>
+                        <img src="<?= $s['poster_path']
+                                ? 'https://image.tmdb.org/t/p/w92' . htmlspecialchars($s['poster_path'])
+                                : 'assets/img/canvas.png' ?>"
+                            alt="<?= htmlspecialchars($s['title']) ?>">
+                    <?php endforeach; ?>
+                </div>
+
+                <a href="movies.php?genre=<?= (int) $g['id'] ?>" class="btn btn-primary">
+                    See <?= htmlspecialchars($g['name']) ?> movies
+                </a>
             </div>
+        <?php endforeach; ?>
+    </div>
 
-            <a href="movies.php?genre=<?= (int) $g['id'] ?>" class="btn btn-primary">
-                See <?= htmlspecialchars($g['name']) ?> movies
-            </a>
-        </div>
-    <?php endforeach; ?>
-</div>
-
-<?php endif; ?>
-
+    <?php endif; ?>
+</section>
 <?php include 'includes/footer.php'; ?>

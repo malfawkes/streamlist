@@ -98,39 +98,41 @@ if (!empty($formParams)) {
 include 'includes/header.php';
 ?>
 
-<h1><?= $activeGenreName ? htmlspecialchars($activeGenreName) . ' Movies' : 'Trending Now' ?></h1>
-<p>Browse what's new. Add anything to your watchlist.</p>
+<section class="wrap">
 
-<?php if ($status === 'error'): ?>
-    <p class="message message-error"><?= htmlspecialchars($message) ?></p>
-<?php endif; ?>
+    <h1><?= $activeGenreName ? htmlspecialchars($activeGenreName) . ' Movies' : 'Trending Now' ?></h1>
+    <p>Browse what's new. Add anything to your watchlist.</p>
 
-<div class="genre-chips">
-    <a href="movies.php" class="chip <?= $hasGenre ? '' : 'chip-active' ?>">All</a>
-    <?php foreach ($genres as $g): ?>
-        <a href="movies.php?genre=<?= (int) $g['id'] ?>"
-           class="chip <?= ($hasGenre && $genreId === (int) $g['id']) ? 'chip-active' : '' ?>">
-            <?= htmlspecialchars($g['name']) ?> (<?= (int) $g['movie_count'] ?>)
-        </a>
-    <?php endforeach; ?>
-</div>
+    <?php if ($status === 'error'): ?>
+        <p class="message message-error"><?= htmlspecialchars($message) ?></p>
+    <?php endif; ?>
 
-<div class="sort-bar">
-    <span>Sort by:</span>
-    <?php
-    $base = $hasGenre ? 'movies.php?genre=' . (int) $genreId . '&' : 'movies.php?';
-    $labels = ['date' => 'Newest', 'rating' => 'Top Rated', 'title' => 'A–Z'];
-    foreach ($labels as $key => $label): ?>
-        <a href="<?= $base ?>sort=<?= $key ?>"
-           class="chip <?= ($sort === $key) ? 'chip-active' : '' ?>"><?= $label ?></a>
-    <?php endforeach; ?>
-</div>
+    <div class="genre-chips">
+        <a href="movies.php" class="chip <?= $hasGenre ? '' : 'chip-active' ?>">All</a>
+        <?php foreach ($genres as $g): ?>
+            <a href="movies.php?genre=<?= (int) $g['id'] ?>"
+            class="chip <?= ($hasGenre && $genreId === (int) $g['id']) ? 'chip-active' : '' ?>">
+                <?= htmlspecialchars($g['name']) ?> (<?= (int) $g['movie_count'] ?>)
+            </a>
+        <?php endforeach; ?>
+    </div>
 
-<?php if (empty($movies)): ?>
-    <p>No movies in this genre yet.</p>
-<?php else: ?>
+    <div class="sort-bar">
+        <span>Sort by:</span>
+        <?php
+        $base = $hasGenre ? 'movies.php?genre=' . (int) $genreId . '&' : 'movies.php?';
+        $labels = ['date' => 'Newest', 'rating' => 'Top Rated', 'title' => 'A–Z'];
+        foreach ($labels as $key => $label): ?>
+            <a href="<?= $base ?>sort=<?= $key ?>"
+            class="chip <?= ($sort === $key) ? 'chip-active' : '' ?>"><?= $label ?></a>
+        <?php endforeach; ?>
+    </div>
 
-<section>
+    <?php if (empty($movies)): ?>
+        <p>No movies in this genre yet.</p>
+    <?php else: ?>
+
+
     <div class="trending-cards">
         <?php foreach ($movies as $movie): ?>
             <div class="card">

@@ -9,7 +9,7 @@ include 'includes/header.php';
 ?>
 
 <section class='login-section'>
-    <div class='wrap login-wrap'>
+    <div class='login-wrap'>
         <h1>Welcome Back!</h1>
         
         <?php if ($status === 'registered'): ?>

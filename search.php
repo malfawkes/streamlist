@@ -30,59 +30,60 @@ if ($term !== '') {
 include 'includes/header.php';
 ?>
 
-<h1 class="search-title">Search</h1>
+<section class="wrap">
+    <h1 class="search-title">Search</h1>
 
-<?php if ($status === 'error'): ?>
-    <p class="message message-error"><?= htmlspecialchars($message) ?></p>
-<?php endif; ?>
+    <?php if ($status === 'error'): ?>
+        <p class="message message-error"><?= htmlspecialchars($message) ?></p>
+    <?php endif; ?>
 
-<form method="get" action="search.php">
-    <input type="text" name="q"
-           value="<?= htmlspecialchars($term) ?>"
-           placeholder="Search movies by title or description…" autofocus>
-    <button type="submit">Search</button>
-</form>
+    <form method="get" action="search.php">
+        <input type="text" name="q"
+            value="<?= htmlspecialchars($term) ?>"
+            placeholder="Search movies by title or description…" autofocus>
+        <button type="submit">Search</button>
+    </form>
 
-<?php if ($term !== '' && empty($movies)): ?>
-    <p class="message message-info">No movies found for "<?= htmlspecialchars($term) ?>".</p>
-<?php elseif (!empty($movies)): ?>
-    <p class="message message-info"><?= count($movies) ?> result(s) for "<?= htmlspecialchars($term) ?>":</p>
+    <?php if ($term !== '' && empty($movies)): ?>
+        <p class="message message-info">No movies found for "<?= htmlspecialchars($term) ?>".</p>
+    <?php elseif (!empty($movies)): ?>
+        <p class="message message-info"><?= count($movies) ?> result(s) for "<?= htmlspecialchars($term) ?>":</p>
 
-    <div class="trending-cards">
-        <?php foreach ($movies as $movie): ?>
-            <div class="card">
-                <div class="card-image">
-                    <?php if ($movie['poster_path']): ?>
-                        <img src="https://image.tmdb.org/t/p/w342<?= htmlspecialchars($movie['poster_path']) ?>"
-                            alt="Poster for <?= htmlspecialchars($movie['title']) ?>">
-                    <?php else: ?>
-                        <div class="poster-fallback">
-                            <span>🎬</span>
-                            <p><?= htmlspecialchars($movie['title']) ?></p>
-                        </div>
+        <div class="trending-cards">
+            <?php foreach ($movies as $movie): ?>
+                <div class="card">
+                    <div class="card-image">
+                        <?php if ($movie['poster_path']): ?>
+                            <img src="https://image.tmdb.org/t/p/w342<?= htmlspecialchars($movie['poster_path']) ?>"
+                                alt="Poster for <?= htmlspecialchars($movie['title']) ?>">
+                        <?php else: ?>
+                            <div class="poster-fallback">
+                                <span>🎬</span>
+                                <p><?= htmlspecialchars($movie['title']) ?></p>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                    <p><a href="movie.php?id=<?= (int) $movie['id'] ?>"><?= htmlspecialchars($movie['title']) ?></a></p>
+                    <p>
+                        <?= $movie['release_date'] ? date('Y', strtotime($movie['release_date'])) : 'TBA' ?>
+                        <?php if ($movie['rating'] !== null && (float) $movie['rating'] > 0): ?>
+                            | ★ <?= number_format((float) $movie['rating'], 1) ?>
+                        <?php endif; ?>
+                    </p>
+                    <?php if ($movie['is_premium']): ?>
+                        <p class="premium-badge">★ PREMIUM</p>
                     <?php endif; ?>
+
+                    <form method="post" action="actions/add_to_watch_list.php">
+                        <input type="hidden" name="movie_id" value="<?= (int) $movie['id'] ?>">
+                        <input type="hidden" name="redirect" value="search.php?q=<?= urlencode($term) ?>">
+                        <button name="add-to-watchlist" type="submit">+ Watchlist</button>
+                    </form>
                 </div>
-                <p><a href="movie.php?id=<?= (int) $movie['id'] ?>"><?= htmlspecialchars($movie['title']) ?></a></p>
-                <p>
-                    <?= $movie['release_date'] ? date('Y', strtotime($movie['release_date'])) : 'TBA' ?>
-                    <?php if ($movie['rating'] !== null && (float) $movie['rating'] > 0): ?>
-                        | ★ <?= number_format((float) $movie['rating'], 1) ?>
-                    <?php endif; ?>
-                </p>
-                <?php if ($movie['is_premium']): ?>
-                    <p class="premium-badge">★ PREMIUM</p>
-                <?php endif; ?>
-
-                <form method="post" action="actions/add_to_watch_list.php">
-                    <input type="hidden" name="movie_id" value="<?= (int) $movie['id'] ?>">
-                    <input type="hidden" name="redirect" value="search.php?q=<?= urlencode($term) ?>">
-                    <button name="add-to-watchlist" type="submit">+ Watchlist</button>
-                </form>
-            </div>
-        <?php endforeach; ?>
-    </div>
-<?php else: ?>
-    <p>Type a movie title, then press <strong>Enter</strong> or click Search.</p>
-<?php endif; ?>
-
+            <?php endforeach; ?>
+        </div>
+    <?php else: ?>
+        <p>Type a movie title, then press <strong>Enter</strong> or click Search.</p>
+    <?php endif; ?>
+</section>
 <?php include 'includes/footer.php'; ?>

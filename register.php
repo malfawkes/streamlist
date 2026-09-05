@@ -9,7 +9,7 @@ include 'includes/header.php';
 ?>
 
 <section class='register-section'>
-    <div class='wrap register-wrap'>
+    <div class='register-wrap'>
         <h1>Create New Account</h1>
 
         <?php if ($status === 'error'): ?>
