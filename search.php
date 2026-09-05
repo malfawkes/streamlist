@@ -11,6 +11,7 @@ require_once 'database/db.php';
  $movies = [];
 
 if ($term !== '') {
+    // Two placeholder names for one value (MySQL driver quirk)
     $stmt = $pdo->prepare(
         'SELECT id, title, poster_path, release_date, rating, is_premium
          FROM movies
@@ -30,24 +31,50 @@ if ($term !== '') {
 include 'includes/header.php';
 ?>
 
-<section class="wrap">
-    <h1 class="search-title">Search</h1>
+<div class="wrap">
+
+    <!-- Hero: the search experience itself IS the page -->
+    <div class="search-hero">
+        <h1>Search</h1>
+        <p class="search-hero-sub">By title or description press Enter to search.</p>
+
+        <form method="get" action="search.php" class="search-bar">
+            <input type="text" name="q"
+                   value="<?= htmlspecialchars($term) ?>"
+                   placeholder="Search movies by title or description…"
+                   autofocus>
+            <button type="submit">Search</button>
+        </form>
+
+        <!-- Landing state only: suggested terms = plain links, zero backend.
+             Each is just search.php?q=word — the same URL a real search builds -->
+        <?php if ($term === ''): ?>
+            <div class="search-suggestions">
+                <span>Try:</span>
+                <a href="search.php?q=space">space</a>
+                <a href="search.php?q=love">love</a>
+                <a href="search.php?q=war">war</a>
+                <a href="search.php?q=night">night</a>
+                <a href="search.php?q=city">city</a>
+            </div>
+        <?php endif; ?>
+    </div>
 
     <?php if ($status === 'error'): ?>
         <p class="message message-error"><?= htmlspecialchars($message) ?></p>
     <?php endif; ?>
 
-    <form method="get" action="search.php">
-        <input type="text" name="q"
-            value="<?= htmlspecialchars($term) ?>"
-            placeholder="Search movies by title or description…" autofocus>
-        <button type="submit">Search</button>
-    </form>
-
     <?php if ($term !== '' && empty($movies)): ?>
-        <p class="message message-info">No movies found for "<?= htmlspecialchars($term) ?>".</p>
+        <div class="search-empty">
+            <p class="search-empty-icon">🔍</p>
+            <p>No movies found for "<?= htmlspecialchars($term) ?>".</p>
+            <p class="search-empty-hint">Try a shorter word, or check the spelling.</p>
+        </div>
     <?php elseif (!empty($movies)): ?>
-        <p class="message message-info"><?= count($movies) ?> result(s) for "<?= htmlspecialchars($term) ?>":</p>
+        <p class="search-results-count">
+            <?= count($movies) ?> result<?= count($movies) === 1 ? '' : 's' ?>
+            for "<?= htmlspecialchars($term) ?>"
+        </p>
 
         <div class="trending-cards">
             <?php foreach ($movies as $movie): ?>
@@ -55,7 +82,7 @@ include 'includes/header.php';
                     <div class="card-image">
                         <?php if ($movie['poster_path']): ?>
                             <img src="https://image.tmdb.org/t/p/w342<?= htmlspecialchars($movie['poster_path']) ?>"
-                                alt="Poster for <?= htmlspecialchars($movie['title']) ?>">
+                                 alt="Poster for <?= htmlspecialchars($movie['title']) ?>">
                         <?php else: ?>
                             <div class="poster-fallback">
                                 <span>🎬</span>
@@ -82,8 +109,8 @@ include 'includes/header.php';
                 </div>
             <?php endforeach; ?>
         </div>
-    <?php else: ?>
-        <p>Type a movie title, then press <strong>Enter</strong> or click Search.</p>
     <?php endif; ?>
-</section>
+
+</div>
+
 <?php include 'includes/footer.php'; ?>

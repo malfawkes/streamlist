@@ -964,3 +964,115 @@ h2 {
   margin: 0 auto; /* centers it in the viewport */
   padding: 0 24px; /* ← THE left/right padding you're asking for */
 }
+
+/* SEARCH PAGE */
+
+.search-hero {
+  max-width: 640px;
+  margin: var(--space-xl) auto;
+  text-align: center;
+  padding: var(--space-md) 0 var(--space-md);
+}
+
+.search-hero-sub {
+  color: var(--color-text-muted);
+  margin-top: var(--space-xs);
+}
+
+/* The attached pill: input + button form ONE shape —
+   the input's right border is removed, and the button's
+   left radius is 0, so they visually fuse */
+.search-bar {
+  display: flex;
+  margin-top: var(--space-md);
+}
+
+.search-bar input {
+  flex: 1;
+  min-width: 0; /* lets flex actually shrink the input */
+  padding: 14px 24px;
+  border: 2px solid var(--color-border);
+  border-right: none;
+  border-radius: var(--radius-pill) 0 0 var(--radius-pill);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.search-bar button {
+  padding: 14px 28px;
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  border: 2px solid var(--color-primary);
+  border-radius: 0 var(--radius-pill) var(--radius-pill) 0;
+  font-family: var(--font-body);
+  font-weight: var(--fw-bold);
+  cursor: pointer;
+  transition: opacity var(--transition-fast);
+}
+.search-bar button:hover {
+  opacity: 0.85;
+}
+
+.search-bar:focus-within input {
+  border-color: var(--color-primary);
+}
+
+.search-suggestions {
+  margin-top: var(--space-md);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  justify-content: center;
+  align-items: center;
+  font-size: var(--fs-small);
+  color: var(--color-text-muted);
+}
+.search-suggestions a {
+  padding: 4px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+  color: var(--color-text);
+  background: var(--color-surface);
+}
+.search-suggestions a:hover {
+  border-color: var(--color-primary);
+}
+
+/* Results counter */
+.search-results-count {
+  color: var(--color-text-muted);
+  font-size: var(--fs-small);
+  margin-bottom: var(--space-md);
+}
+
+/* No-results state */
+.search-empty {
+  text-align: center;
+  padding: var(--space-xl) 0;
+  color: var(--color-text-muted);
+}
+.search-empty-icon {
+  font-size: 2.5rem;
+  margin-bottom: var(--space-sm);
+}
+.search-empty-hint {
+  font-size: var(--fs-small);
+  margin-top: var(--space-xs);
+}
+
+@media (max-width: 480px) {
+  .search-bar {
+    flex-direction: column;
+  }
+  .search-bar input {
+    border-right: 2px solid var(--color-border);
+    border-radius: var(--radius-pill);
+  }
+  .search-bar button {
+    border-radius: var(--radius-pill);
+    margin-top: var(--space-xs);
+  }
+}
