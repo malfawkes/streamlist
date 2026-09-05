@@ -102,7 +102,7 @@ include 'includes/header.php';
 <p>Browse what's new. Add anything to your watchlist.</p>
 
 <?php if ($status === 'error'): ?>
-    <p style="color: red;"><?= htmlspecialchars($message) ?></p>
+    <p class="message message-error"><?= htmlspecialchars($message) ?></p>
 <?php endif; ?>
 
 <div class="genre-chips">

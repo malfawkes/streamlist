@@ -3,7 +3,6 @@
 
 require_once __DIR__ . '/../includes/auth.php';
 
-// Bouncer: adding requires a session (can't check a button that never arrived)
 if (!isLoggedIn()) {
     header('Location: ' . SITE_URL . '/login.php');
     exit;
@@ -17,13 +16,10 @@ if (!isset($_POST['add-to-watchlist'])) {
     exit;
 }
 
-// ── Where to send the user back ─────────────────────────
- $redirectTo = $_POST['redirect'] ?? 'movies.php';
+$redirectTo = $_POST['redirect'] ?? 'movies.php';
 
-// Allow-list (open-redirect defense): only OUR pages are valid targets.
-// str_starts_with handles "search.php?q=..." style targets.
- $allowed = ['movies.php', 'watchlist.php', 'search.php', 'movie.php'];
- $isAllowed = false;
+$allowed = ['movies.php', 'watchlist.php', 'search.php', 'movie.php'];
+$isAllowed = false;
 foreach ($allowed as $prefix) {
     if (str_starts_with($redirectTo, $prefix)) {
         $isAllowed = true;
@@ -60,8 +56,7 @@ try {
         exit;
     }
 
-    // 2. Tier gate: free user + premium movie → blocked
-    // ✅ NEW — paywall → upsell page, carrying the movie that was blocked:
+
     if ($_SESSION['user_tier'] !== 'premium' && $movie['is_premium']) {
         header('Location: ../upgrade.php?status=blocked&movie=' . (int) $movieId);
         exit;

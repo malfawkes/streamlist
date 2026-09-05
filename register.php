@@ -13,7 +13,7 @@ include 'includes/header.php';
         <h1>Create New Account</h1>
 
         <?php if ($status === 'error'): ?>
-            <p style="color: red;"><?= htmlspecialchars($message) ?></p>
+            <p class="message message-error"><?= htmlspecialchars($message) ?></p>
         <?php endif; ?>
 
         <!-- <p>Fill in the details to create your account</p> -->

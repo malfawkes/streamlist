@@ -33,7 +33,7 @@ include 'includes/header.php';
 <h1 class="search-title">Search</h1>
 
 <?php if ($status === 'error'): ?>
-    <p style="color: red;"><?= htmlspecialchars($message) ?></p>
+    <p class="message message-error"><?= htmlspecialchars($message) ?></p>
 <?php endif; ?>
 
 <form method="get" action="search.php">
@@ -44,9 +44,9 @@ include 'includes/header.php';
 </form>
 
 <?php if ($term !== '' && empty($movies)): ?>
-    <p>No movies found for "<?= htmlspecialchars($term) ?>".</p>
+    <p class="message message-info">No movies found for "<?= htmlspecialchars($term) ?>".</p>
 <?php elseif (!empty($movies)): ?>
-    <p><?= count($movies) ?> result(s) for "<?= htmlspecialchars($term) ?>":</p>
+    <p class="message message-info"><?= count($movies) ?> result(s) for "<?= htmlspecialchars($term) ?>":</p>
 
     <div class="trending-cards">
         <?php foreach ($movies as $movie): ?>

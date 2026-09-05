@@ -41,7 +41,7 @@ include 'includes/header.php';
 ?>
 
 <?php if ($status === 'error'): ?>
-    <p style="color: red;"><?= htmlspecialchars($message) ?></p>
+    <p class="message message-error"><?= htmlspecialchars($message) ?></p>
 <?php endif; ?>
 
 <section class="movie-detail">

@@ -6,6 +6,9 @@
 
 body {
   font-family: var(--font-body);
+  background: var(--color-bg);
+  color: var(--color-text);
+  padding-top: 70px;
 }
 
 :root {
@@ -77,14 +80,20 @@ section {
   padding: var(--space-xl) 0;
 }
 
-.btn {
-  cursor: pointer;
-}
-
 .premium-badge {
   color: #b8860b;
   font-weight: bold;
   font-size: 0.75rem;
+}
+
+.btn-secondary {
+  background: var(--color-primary); /* was var(--primary) — undefined */
+  color: var(--color-text-inverse);
+  padding: 10px 22px;
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+  font-weight: var(--fw-bold);
+  border: 2px solid var(--color-text-muted);
 }
 
 /* NAV */
@@ -154,7 +163,7 @@ header {
   right: 0;
   z-index: 1000;
   background: var(--color-primary);
-  padding: 0.6rem;
+  padding: 0.7rem;
 }
 
 /* HERO SECTION */
@@ -758,4 +767,115 @@ footer {
 
 .search-title {
   margin-top: var(--space-xl);
+}
+
+/* Message boxes — replacing all inline-styled <p> messages */
+.message {
+  max-width: 640px;
+  margin: var(--space-sm) 0;
+  padding: 12px 18px;
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-body);
+}
+.message-success {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #a5d6a7;
+}
+.message-error {
+  background: #fdecea;
+  color: #c62828;
+  border: 1px solid #f5b5ae;
+}
+
+/* Buttons inside movie cards — CSS-only, no HTML edits needed */
+.card button {
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 8px 16px;
+  font-family: var(--font-body);
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-small);
+  cursor: pointer;
+  width: 100%;
+  margin-top: var(--space-xs);
+  transition: opacity var(--transition-fast);
+}
+.card button:hover {
+  opacity: 0.85;
+}
+
+/* Auth pages (login/register) */
+.login-wrap,
+.register-wrap {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  max-width: 420px;
+  margin: var(--space-xl) auto;
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-sm);
+}
+.login-wrap h1,
+.register-wrap h1 {
+  font-size: var(--fs-h3);
+  margin-bottom: var(--space-md);
+  text-align: center;
+}
+.login-wrap input,
+.register-wrap input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  margin-bottom: var(--space-sm);
+}
+.login-wrap button,
+.register-wrap button {
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 12px 24px;
+  font-weight: var(--fw-bold);
+  cursor: pointer;
+  width: 100%;
+}
+.login-wrap p,
+.register-wrap p {
+  margin-top: var(--space-md);
+  text-align: center;
+}
+
+/* Content width for the dynamic pages */
+.movie-detail {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+.genre-cards {
+  padding: 0 24px;
+}
+
+/* Sections without a .wrap child get side padding
+   (:has = modern CSS — works in current Chrome/Firefox) */
+section:not(:has(.wrap)) {
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+/* Consistent page headings */
+h1 {
+  font-size: var(--fs-h1);
+  font-weight: var(--fw-bold);
+  line-height: 1.2;
+  margin-bottom: var(--space-sm);
+}
+h2 {
+  font-size: var(--fs-h3);
+  font-weight: var(--fw-bold);
+  margin-bottom: var(--space-xs);
 }

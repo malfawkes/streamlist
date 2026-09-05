@@ -30,14 +30,14 @@ include 'includes/header.php';
 <h1>StreamList Plus</h1>
 
 <?php if ($status === 'upgraded'): ?>
-    <p style="color: green;">You're now a Plus member — unlimited watchlists and premium titles unlocked!</p>
+    <p class="message message-success">You're now a Plus member unlimited watchlists and premium titles unlocked!</p>
 <?php elseif ($status === 'downgraded'): ?>
-    <p style="color: green;">You're back on the Free plan.</p>
+    <p class="message message-success">You're back on the Free plan.</p>
 <?php elseif ($status === 'error'): ?>
-    <p style="color: red;"><?= htmlspecialchars($message) ?></p>
+    <p class="message message-error"><?= htmlspecialchars($message) ?></p>
 <?php elseif ($status === 'blocked' && $blockedTitle): ?>
-    <p style="color: red;"><strong><?= htmlspecialchars($blockedTitle) ?></strong>
-    is a Plus title — upgrade below to unlock it.</p>
+    <p class="message message-error"><strong><?= htmlspecialchars($blockedTitle) ?></strong>
+    is a Plus title upgrade below to unlock it.</p>
 <?php endif; ?>
 
 <!-- Plan comparison -->
@@ -78,10 +78,10 @@ include 'includes/header.php';
             <form method="post" action="actions/process_upgrade.php"
                   onsubmit="return confirm('Simulate payment of $4.99/month?');">
                 <button name="upgrade-now" type="submit" class="btn btn-primary">
-                    Upgrade to Plus — $4.99/mo
+                    Upgrade to Plus $4.99/mo
                 </button>
             </form>
-            <p class="plan-note">Demo checkout — no real payment is processed.</p>
+            <p class="plan-note">Demo checkout no real payment is processed.</p>
         <?php endif; ?>
     </div>
 </div>

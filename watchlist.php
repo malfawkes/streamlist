@@ -46,7 +46,7 @@ include 'includes/header.php';
 
 <?php if ($count > 0): ?>
     <?php if ($_SESSION['user_tier'] !== 'premium'): ?>
-        <p><?= $count ?> of <?= (int) FREE_TIER_WATCHLIST_LIMIT ?> titles used —
+        <p class="message" style="background: var(--color-bg-alt); color: var(--color-text-muted);><?= $count ?> of <?= (int) FREE_TIER_WATCHLIST_LIMIT ?> titles used
            <a href="upgrade.php">go unlimited with Plus</a></p>
     <?php else: ?>
         <p><?= $count ?> titles</p>
@@ -54,11 +54,11 @@ include 'includes/header.php';
 <?php endif; ?>
 
 <?php if ($status === 'added'): ?>
-    <p style="color: green;">Added to your watchlist.</p>
+    <p class="message message-success">Added to your watchlist.</p>
 <?php elseif ($status === 'removed'): ?>
-    <p style="color: green;">Removed from your watchlist.</p>
+    <p class="message message-success">Removed from your watchlist.</p>
 <?php elseif ($status === 'error'): ?>
-    <p style="color: red;"><?= htmlspecialchars($message) ?></p>
+    <p class="message message-erorr"><?= htmlspecialchars($message) ?></p>
 <?php endif; ?>
 
 <!-- Sort chips — GET links, read-only, no CSRF needed -->

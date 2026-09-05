@@ -13,9 +13,9 @@ include 'includes/header.php';
         <h1>Welcome Back!</h1>
         
         <?php if ($status === 'registered'): ?>
-            <p style="color: green;">Account created successfully! Please login.</p>
+            <p class="message message-success">Account created successfully! Please login.</p>
         <?php elseif ($status === 'error'): ?>
-            <p style="color: red;"><?= htmlspecialchars($message) ?></p>
+            <p class="message message-error"><?= htmlspecialchars($message) ?></p>
         <?php endif; ?>
 
         <form action="actions/process_login.php" method="post">
