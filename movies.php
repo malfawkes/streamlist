@@ -1,31 +1,37 @@
 <?php
-// movies.php — TRENDING: protected, paginated, genre-filterable
+// movies.php — TRENDING: protected, paginated, genre-filtered, sortable
 
 require_once 'includes/auth.php';
 requireLogin();
 
 require_once 'database/db.php';
 
-// ── Pagination: which page? ──────────────────────────────────────
+// ── Pagination ────────────────────────────────────────────────────
  $page = filter_var($_GET['page'] ?? 1, FILTER_VALIDATE_INT);
 if ($page === false || $page < 1) { $page = 1; }
 
-// ── Genre filter: ?genre=27 (validated like every URL param) ────
+// ── Genre filter ─────────────────────────────────────────────────
  $genreId = filter_var($_GET['genre'] ?? '', FILTER_VALIDATE_INT);
  $hasGenre = ($genreId !== false && $genreId > 0);
 
-// ── Active genre name: ONE direct query — simpler than looping the chips ──
+// ── Sorting (allow-listed map → only our strings reach the SQL) ──
+ $sort = $_GET['sort'] ?? 'date';
+ $sortMap = [
+    'date'   => 'm.release_date DESC',
+    'rating' => 'm.rating DESC',
+    'title'  => 'm.title ASC',
+];
+if (!array_key_exists($sort, $sortMap)) { $sort = 'date'; }
+ $orderBy = $sortMap[$sort];
+
+// ── Active genre name + unknown-genre guard ──────────────────────
  $activeGenreName = null;
 if ($hasGenre) {
     $stmtName = $pdo->prepare('SELECT name FROM genres WHERE id = :gid');
     $stmtName->bindValue(':gid', $genreId, PDO::PARAM_INT);
     $stmtName->execute();
-    // fetchColumn() returns the name, or false if the genre doesn't exist
     $activeGenreName = $stmtName->fetchColumn() ?: null;
 }
-
-// Guard: a genre ID that isn't in our table (e.g. ?genre=999 typed by hand)
-// → same "validate the record exists" pattern as movie.php's not-found redirect
 if ($hasGenre && $activeGenreName === null) {
     header('Location: movies.php');
     exit;
@@ -43,22 +49,22 @@ if ($hasGenre) {
     $c->execute();
     $totalMovies = (int) $c->fetchColumn();
 
-    $stmt = $pdo->prepare('SELECT m.id, m.title, m.poster_path, m.release_date, m.rating, m.is_premium
+    $stmt = $pdo->prepare("SELECT m.id, m.title, m.poster_path, m.release_date, m.rating, m.is_premium
                            FROM movies m
                            INNER JOIN movie_genres mg ON mg.movie_id = m.id
                            WHERE mg.genre_id = :gid AND m.release_date <= CURDATE()
-                           ORDER BY m.release_date DESC
-                           LIMIT :limit OFFSET :offset');
+                           ORDER BY {$orderBy}
+                           LIMIT :limit OFFSET :offset");
     $stmt->bindValue(':gid', $genreId, PDO::PARAM_INT);
 } else {
     $totalMovies = (int) $pdo->query('SELECT COUNT(*) FROM movies
                                       WHERE release_date <= CURDATE()')->fetchColumn();
 
-    $stmt = $pdo->prepare('SELECT id, title, poster_path, release_date, rating, is_premium
-                           FROM movies
-                           WHERE release_date <= CURDATE()
-                           ORDER BY release_date DESC
-                           LIMIT :limit OFFSET :offset');
+    $stmt = $pdo->prepare("SELECT m.id, m.title, m.poster_path, m.release_date, m.rating, m.is_premium
+                           FROM movies m
+                           WHERE m.release_date <= CURDATE()
+                           ORDER BY {$orderBy}
+                           LIMIT :limit OFFSET :offset");
 }
 
  $stmt->bindValue(':limit',  $perPage, PDO::PARAM_INT);
@@ -68,7 +74,7 @@ if ($hasGenre) {
 
  $totalPages = (int) ceil($totalMovies / $perPage);
 
-// ── Genre chips data: every genre + its movie count ──────────────
+// ── Genre chips data ─────────────────────────────────────────────
  $genres = $pdo->query(
     'SELECT g.id, g.name, COUNT(mg.movie_id) AS movie_count
      FROM genres g
@@ -76,6 +82,15 @@ if ($hasGenre) {
      GROUP BY g.id, g.name
      ORDER BY g.name'
 )->fetchAll(PDO::FETCH_ASSOC);
+
+// ── Redirect target for this page's add-forms (genre + sort kept) ──
+ $redirectValue = 'movies.php';
+ $formParams = [];
+if ($hasGenre)       { $formParams[] = 'genre=' . (int) $genreId; }
+if ($sort !== 'date') { $formParams[] = 'sort=' . $sort; }
+if (!empty($formParams)) {
+    $redirectValue .= '?' . implode('&', $formParams);
+}
 
  $status  = $_GET['status']  ?? null;
  $message = $_GET['message'] ?? null;
@@ -90,7 +105,6 @@ include 'includes/header.php';
     <p style="color: red;"><?= htmlspecialchars($message) ?></p>
 <?php endif; ?>
 
-<!-- Genre chips: All + one per genre, active one highlighted -->
 <div class="genre-chips">
     <a href="movies.php" class="chip <?= $hasGenre ? '' : 'chip-active' ?>">All</a>
     <?php foreach ($genres as $g): ?>
@@ -98,6 +112,17 @@ include 'includes/header.php';
            class="chip <?= ($hasGenre && $genreId === (int) $g['id']) ? 'chip-active' : '' ?>">
             <?= htmlspecialchars($g['name']) ?> (<?= (int) $g['movie_count'] ?>)
         </a>
+    <?php endforeach; ?>
+</div>
+
+<div class="sort-bar">
+    <span>Sort by:</span>
+    <?php
+    $base = $hasGenre ? 'movies.php?genre=' . (int) $genreId . '&' : 'movies.php?';
+    $labels = ['date' => 'Newest', 'rating' => 'Top Rated', 'title' => 'A–Z'];
+    foreach ($labels as $key => $label): ?>
+        <a href="<?= $base ?>sort=<?= $key ?>"
+           class="chip <?= ($sort === $key) ? 'chip-active' : '' ?>"><?= $label ?></a>
     <?php endforeach; ?>
 </div>
 
@@ -117,7 +142,7 @@ include 'includes/header.php';
                 </div>
                 <p><a href="movie.php?id=<?= (int) $movie['id'] ?>"><?= htmlspecialchars($movie['title']) ?></a></p>
                 <p>
-                    <?= date('Y', strtotime($movie['release_date'] ?: 'now')) ?>
+                    <?= $movie['release_date'] ? date('Y', strtotime($movie['release_date'])) : 'TBA' ?>
                     <?php if ($movie['rating'] !== null && (float) $movie['rating'] > 0): ?>
                         | ★ <?= number_format((float) $movie['rating'], 1) ?>
                     <?php endif; ?>
@@ -127,16 +152,16 @@ include 'includes/header.php';
                 <?php endif; ?>
 
                 <form method="post" action="actions/add_to_watch_list.php">
+                    
                     <input type="hidden" name="movie_id" value="<?= (int) $movie['id'] ?>">
-                    <input type="hidden" name="redirect"
-                           value="movies.php<?= $hasGenre ? '?genre=' . (int) $genreId : '' ?>">
+                    <input type="hidden" name="redirect" value="<?= htmlspecialchars($redirectValue) ?>">
                     <button name="add-to-watchlist" type="submit">+ Watchlist</button>
                 </form>
             </div>
         <?php endforeach; ?>
     </div>
 
-    <?php $keep = $hasGenre ? 'genre=' . (int) $genreId . '&' : ''; ?>
+    <?php $keep = ($hasGenre ? 'genre=' . (int) $genreId . '&' : '') . 'sort=' . $sort . '&'; ?>
     <div class="pagination">
         <?php if ($page > 1): ?>
             <a href="movies.php?<?= $keep ?>page=<?= $page - 1 ?>">&larr; Previous</a>
