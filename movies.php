@@ -128,6 +128,8 @@ include 'includes/header.php';
 
                 <form method="post" action="actions/add_to_watch_list.php">
                     <input type="hidden" name="movie_id" value="<?= (int) $movie['id'] ?>">
+                    <input type="hidden" name="redirect"
+                           value="movies.php<?= $hasGenre ? '?genre=' . (int) $genreId : '' ?>">
                     <button name="add-to-watchlist" type="submit">+ Watchlist</button>
                 </form>
             </div>
