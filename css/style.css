@@ -971,7 +971,7 @@ h2 {
   max-width: 640px;
   margin: var(--space-xl) auto;
   text-align: center;
-  padding: var(--space-md) 0 var(--space-md);
+  padding: var(--space-md) 0;
 }
 
 .search-hero-sub {
@@ -1075,4 +1075,8 @@ h2 {
     border-radius: var(--radius-pill);
     margin-top: var(--space-xs);
   }
+}
+
+.trending-cards {
+  margin-bottom: var(--space-md);
 }
