@@ -1,22 +1,28 @@
 <?php
-// seed_from_tmdb.php v3 — big catalog + trailer keys. ONE-TIME, re-runnable.
+// seed_from_tmdb.php v5 — adds genre capture. Re-runnable. Movies only.
 
-set_time_limit(0);   // 🆕 removes PHP's 30-second execution cap — this takes MINUTES now
+set_time_limit(0);
 
 require_once 'database/configHidden.php';
 require_once 'database/db.php';
 
-// 🆕 one helper instead of copy-pasted fetch code (DRY — functions exist for this)
 function tmdbFetch(string $url): ?array
 {
     $json = @file_get_contents($url);
     return $json === false ? null : json_decode($json, true);
 }
 
-// Dial: pages per list. 20 pages × 20 movies ≈ 400/list. Lower to 10 for a faster run.
+// 🆕 1. Genre dictionary — once, ~19 rows (Action, Comedy, Horror…)
+ $genresData = tmdbFetch('https://api.themoviedb.org/3/genre/movie/list?api_key=' . TMDB_API_KEY);
+ $stmtGenre = $pdo->prepare('INSERT IGNORE INTO genres (id, name) VALUES (:id, :name)');
+foreach ($genresData['genres'] ?? [] as $g) {
+    $stmtGenre->bindValue(':id', $g['id'], PDO::PARAM_INT);
+    $stmtGenre->bindValue(':name', $g['name']);
+    $stmtGenre->execute();
+}
+
  $pagesPerList = 20;
 
-// 🆕 sources generated with loops (same concat skill as your form URLs)
  $sources = [];
 foreach (range(1, $pagesPerList) as $p) {
     $sources[] = 'https://api.themoviedb.org/3/movie/popular?api_key='   . TMDB_API_KEY . '&page=' . $p;
@@ -25,11 +31,19 @@ foreach (range(1, $pagesPerList) as $p) {
     $sources[] = 'https://api.themoviedb.org/3/movie/top_rated?api_key=' . TMDB_API_KEY . '&page=' . $p;
 }
  $sources[] = 'https://api.themoviedb.org/3/trending/movie/week?api_key=' . TMDB_API_KEY;
-
-// 🆕 /discover = TMDB's filter endpoint — genre variety (28=action, 27=horror)
 foreach (range(1, 5) as $p) {
-    $sources[] = 'https://api.themoviedb.org/3/discover/movie?api_key=' . TMDB_API_KEY . '&with_genres=28&page=' . $p;
-    $sources[] = 'https://api.themoviedb.org/3/discover/movie?api_key=' . TMDB_API_KEY . '&with_genres=27&page=' . $p;
+    $sources[] = 'https://api.themoviedb.org/3/movie/upcoming?api_key='   . TMDB_API_KEY . '&page=' . $p;
+    $sources[] = 'https://api.themoviedb.org/3/movie/now_playing?api_key='. TMDB_API_KEY . '&page=' . $p;
+}
+ $genreSlices = [
+    ['with_genres=28', 4], ['with_genres=35', 4], ['with_genres=27', 4],
+    ['with_genres=10749', 3], ['with_genres=878', 4], ['with_genres=16', 3],
+];
+foreach ($genreSlices as [$filter, $pages]) {
+    foreach (range(1, $pages) as $p) {
+        $sources[] = 'https://api.themoviedb.org/3/discover/movie?api_key='
+                   . TMDB_API_KEY . '&' . $filter . '&page=' . $p;
+    }
 }
 
  $stmt = $pdo->prepare(
@@ -38,16 +52,18 @@ foreach (range(1, 5) as $p) {
      VALUES
         (:tmdb_id, :title, :poster_path, :release_date, :is_premium, :overview, :rating, :backdrop_path)'
 );
-
-// 🆕 your FIRST real UPDATE statement — writes trailer_key into a row that already exists
  $stmtTrailer = $pdo->prepare('UPDATE movies SET trailer_key = :key WHERE tmdb_id = :tmdb_id');
+// 🆕 2. The genre junction writer
+ $stmtMovieGenre = $pdo->prepare(
+    'INSERT IGNORE INTO movie_genres (movie_id, genre_id) VALUES (:movie_id, :genre_id)'
+);
 
  $inserted = 0;
  $index    = 0;
 
 foreach ($sources as $url) {
     $data = tmdbFetch($url);
-    if (!isset($data['results'])) { continue; }   // one bad page never kills the run
+    if (!isset($data['results'])) { continue; }
 
     foreach ($data['results'] as $movie) {
         $index++;
@@ -58,20 +74,27 @@ foreach ($sources as $url) {
         $stmt->bindValue(':release_date',  $movie['release_date'] ?: null);
         $stmt->bindValue(':is_premium',    ($index % 5 === 0) ? 1 : 0, PDO::PARAM_INT);
         $stmt->bindValue(':overview',      $movie['overview'] ?: null);
-        $stmt->bindValue(':rating',        $movie['vote_average'] !== null
-                                            ? (float) $movie['vote_average'] : null);
+        // 🆕 3. 0.0 means "no votes yet" → store null (?: turns 0 into null)
+        $stmt->bindValue(':rating',        $movie['vote_average'] ?: null);
         $stmt->bindValue(':backdrop_path', $movie['backdrop_path'] ?: null);
         $stmt->execute();
 
-        // 🆕 rowCount()===1 → this row is NEW (0 = duplicate skipped by IGNORE).
-        // Fetch trailer ONLY for new movies → re-runs never re-fetch ~1000 videos.
         if ($stmt->rowCount() === 1) {
             $inserted++;
 
+            // 🆕 4. our internal id — lastInsertId(), the registration trick!
+            // (movie_genres references movies.id, NOT tmdb_id)
+            $ourId = (int) $pdo->lastInsertId();
+
+            // 🆕 5. link this movie to each of its genres
+            foreach ($movie['genre_ids'] ?? [] as $gid) {
+                $stmtMovieGenre->bindValue(':movie_id', $ourId, PDO::PARAM_INT);
+                $stmtMovieGenre->bindValue(':genre_id', $gid, PDO::PARAM_INT);
+                $stmtMovieGenre->execute();
+            }
+
             $videos = tmdbFetch('https://api.themoviedb.org/3/movie/'
                               . $movie['id'] . '/videos?api_key=' . TMDB_API_KEY);
-
-            // Pick: first YouTube Trailer; fall back to a Teaser; else none
             $key = null;
             foreach ($videos['results'] ?? [] as $v) {
                 if ($v['site'] === 'YouTube' && $v['type'] === 'Trailer') { $key = $v['key']; break; }
@@ -89,9 +112,9 @@ foreach ($sources as $url) {
         }
     }
     echo "<p>List done — {$inserted} imported so far…</p>";
-    flush(); @ob_flush();   // 🆕 try to push progress to the browser live
+    flush(); @ob_flush();
 }
 
 echo "<h2>Seeding complete</h2>";
-echo "<p>{$inserted} new movies imported ({$index} processed, overlaps skipped).</p>";
+echo "<p>{$inserted} new movies with genres imported.</p>";
 echo "<p><a href='movies.php'>Go to movies →</a></p>";

@@ -14,10 +14,11 @@ $hero = $pdo->query(
      LIMIT 1'
 )->fetch(PDO::FETCH_ASSOC);      // fetch() = ONE row — exactly one hero
 
-// TRENDING strip: the 5 newest releases
-$trending = $pdo->query(
+// index.php — FIX A: exclude future films from the trending strip
+ $trending = $pdo->query(
     'SELECT id, title, poster_path, release_date, rating, is_premium
      FROM movies
+     WHERE release_date <= CURDATE()
      ORDER BY release_date DESC
      LIMIT 5'
 )->fetchAll(PDO::FETCH_ASSOC);
@@ -81,7 +82,9 @@ include 'includes/header.php';
 
         <div class="trending-cards">
     <?php foreach ($trending as $movie): ?>
+
         <div class="card">
+            
             <div class="card-image">
                 <img src="<?= $movie['poster_path']
                         ? 'https://image.tmdb.org/t/p/w342' . htmlspecialchars($movie['poster_path'])
@@ -91,7 +94,7 @@ include 'includes/header.php';
             <p><?= htmlspecialchars($movie['title']) ?></p>
             <p>
                 <?= date('Y', strtotime($movie['release_date'] ?: 'now')) ?>
-                <?php if ($movie['rating'] !== null): ?>
+                <?php if ($movie['rating'] !== null && (float) $movie['rating'] > 0): ?>
                     | ★ <?= number_format((float) $movie['rating'], 1) ?>
                 <?php endif; ?>
             </p>

@@ -589,3 +589,67 @@ footer {
   gap: var(--space-md);
   padding: var(--space-lg) 0;
 }
+
+.genre-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin: var(--space-md) 0;
+}
+.chip {
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  font-size: var(--fs-small);
+  text-decoration: none;
+  color: var(--color-text);
+}
+.chip-active {
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  border-color: var(--color-primary);
+}
+
+/* Genre chips (if not yet applied) */
+.genre-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin: var(--space-md) 0;
+}
+.chip {
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  font-size: var(--fs-small);
+  text-decoration: none;
+  color: var(--color-text);
+}
+.chip-active {
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  border-color: var(--color-primary);
+}
+
+/* Genres page */
+.genre-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-md);
+}
+.genre-card {
+  padding: var(--space-md);
+}
+.genre-posters {
+  display: flex;
+  gap: var(--space-xs);
+  margin: var(--space-sm) 0;
+}
+.genre-posters img {
+  width: 25%;
+  aspect-ratio: 2 / 3; /* poster shape */
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+}
