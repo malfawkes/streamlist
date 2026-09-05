@@ -61,8 +61,9 @@ try {
     }
 
     // 2. Tier gate: free user + premium movie → blocked
+    // ✅ NEW — paywall → upsell page, carrying the movie that was blocked:
     if ($_SESSION['user_tier'] !== 'premium' && $movie['is_premium']) {
-        header('Location: ../' . $redirectTo . $sep . 'status=error&message=' . urlencode('That title is for StreamList Plus members. Upgrade to add it.'));
+        header('Location: ../upgrade.php?status=blocked&movie=' . (int) $movieId);
         exit;
     }
 

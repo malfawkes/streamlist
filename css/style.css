@@ -653,3 +653,81 @@ footer {
   object-fit: cover;
   border-radius: var(--radius-sm);
 }
+
+/* UPGRADE PLUS */
+.plus-badge {
+  color: #ffffff;
+  font-weight: bold;
+  font-size: var(--fs-small);
+  padding: 4px 10px;
+  border: 1px solid #b8860b;
+  border-radius: var(--radius-pill);
+}
+.upgrade-link {
+  color: #b8860b;
+  font-weight: bold;
+  text-decoration: none;
+  font-size: var(--fs-small);
+}
+.plan-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-md);
+  max-width: 800px;
+  margin: var(--space-lg) auto;
+}
+.plan-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+}
+.plan-highlight {
+  border: 2px solid #b8860b;
+}
+.plan-price {
+  font-size: var(--fs-h2);
+  font-weight: var(--fw-bold);
+  margin: var(--space-sm) 0;
+}
+.plan-per {
+  font-size: var(--fs-small);
+  color: var(--color-text-muted);
+}
+.plan-card ul {
+  margin: var(--space-sm) 0;
+  padding-left: 20px;
+}
+.plan-current {
+  color: green;
+  font-weight: var(--fw-bold);
+}
+.plan-note {
+  font-size: var(--fs-small);
+  color: var(--color-text-muted);
+}
+
+/* Nav search box */
+.nav-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.nav-search input {
+  padding: 8px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-secondary);
+  font-family: var(--font-body);
+  font-size: var(--fs-small);
+  min-width: 180px;
+}
+.nav-search button {
+  background: var(--color-secondary);
+  color: var(--color-text);
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 8px 14px;
+  font-weight: var(--fw-bold);
+  cursor: pointer;
+}

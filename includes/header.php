@@ -1,8 +1,7 @@
 <?php
-// includes/header.php — now also boots the session for every page
+// includes/header.php — shared layout: boots session, renders nav on every page
 require_once __DIR__ . '/auth.php';
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -22,29 +21,43 @@ require_once __DIR__ . '/auth.php';
         <!-- Logo: links back to homepage -->
         <a href="index.php" class="logo">
             <img src="assets/logo/g4.png" alt="Streamlist icon">
-            <span class="logo-text">StreamList</span>
+            <span class="logo-text">Streamlist</span>
         </a>
 
         <!-- Main navigation links -->
         <nav class="nav-links">
             <a href="movies.php">Trending</a>
             <a href="genres.php">Genres</a>
-            <a href="#pricing">Pricing</a>
-            <a href="#about">About</a>
-            
+            <a href="upgrade.php">Pricing</a>
+            <!-- index.php#about, not #about: a bare #anchor jumps within the
+                 CURRENT page — which has no #about section. Cross-page anchors
+                 need the page in the URL. -->
+            <a href="index.php#about">About</a>
         </nav>
 
+        <!-- Search: every page, for logged-in users.
+             method="get" → browser builds search.php?q=… itself.
+             value= pre-fills the box with the current term — on the search
+             page itself, the box shows what you searched.
+             htmlspecialchars because $_GET is user-editable — the exact
+             value-attribute XSS wall from search.php. -->
+        <?php if (isLoggedIn()): ?>
+            <form method="get" action="search.php" class="nav-search">
+                <input type="text" name="q" placeholder="Search movies…"
+                       value="<?= htmlspecialchars($_GET['q'] ?? '') ?>">
+                <button type="submit">Go</button>
+            </form>
+        <?php endif; ?>
 
-
-        <!-- Login / Sign up -->
+        <!-- Account area: tier-aware -->
         <div class="nav-auth">
             <?php if (isLoggedIn()): ?>
-                <form method="get" action="search.php" class="nav-search">
-                    <input type="text" name="q" placeholder="Search...">
-                </form>
-            <?php endif; ?>
-            
-            <?php if (isLoggedIn()): ?>
+                <?php if (($_SESSION['user_tier'] ?? 'free') === 'premium'): ?>
+                    <span class="plus-badge">★ PLUS</span>
+                <?php else: ?>
+                    <a href="upgrade.php" class="upgrade-link">Upgrade</a>
+                <?php endif; ?>
+
                 <span class="login">Hi, <?= htmlspecialchars($_SESSION['user_name']) ?></span>
                 <a href="watchlist.php" class="login">My Watchlist</a>
                 <a href="logout.php" class="btn btn-primary">Log Out</a>
