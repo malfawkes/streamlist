@@ -879,3 +879,86 @@ h2 {
   font-weight: var(--fw-bold);
   margin-bottom: var(--space-xs);
 }
+
+/* ═══ GLOBAL MOVIE CARDS ═══════════════════════════════════
+   Applies to movies.php, search.php, watchlist.php, index.php alike. */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-md);
+  padding: 1rem 1rem 1.2rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+/* The classic streaming-app card lift on hover */
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Poster box: TRUE poster proportions (2:3), responsive —
+   replaces the fixed 300px height on every page consistently */
+.trending-cards .card-image {
+  aspect-ratio: 2 / 3;
+  height: auto;
+  overflow: hidden;
+}
+.trending-cards img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+}
+
+/* Card text: first <p> = title, second <p> = year/rating line
+   (first-of-type / nth-of-type target by position among p's —
+   the image div and forms don't count, buttons stay untouched) */
+.trending-cards .card > p:first-of-type a {
+  color: var(--color-text);
+  font-weight: var(--fw-bold);
+  text-decoration: none;
+}
+.trending-cards .card > p:first-of-type a:hover {
+  text-decoration: underline;
+}
+.trending-cards .card > p:nth-of-type(2) {
+  color: var(--color-text-muted);
+  font-size: var(--fs-small);
+}
+.trending-cards .card > p {
+  margin: 6px 0 0;
+}
+
+.user-feedbacks .card {
+  color: var(--color-primary);
+}
+
+/* Placeholder for movies with no poster — dark tile, like real apps */
+.poster-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  background: #1a1a1e;
+  border-radius: var(--radius-sm);
+  text-align: center;
+  padding: var(--space-sm);
+}
+.poster-fallback span {
+  font-size: 2rem;
+}
+.poster-fallback p {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: var(--fs-small);
+  font-weight: var(--fw-bold);
+  margin: 0;
+}

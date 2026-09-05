@@ -52,10 +52,15 @@ include 'includes/header.php';
         <?php foreach ($movies as $movie): ?>
             <div class="card">
                 <div class="card-image">
-                    <img src="<?= $movie['poster_path']
-                            ? 'https://image.tmdb.org/t/p/w342' . htmlspecialchars($movie['poster_path'])
-                            : 'assets/img/canvas.png' ?>"
-                         alt="Poster for <?= htmlspecialchars($movie['title']) ?>">
+                    <?php if ($movie['poster_path']): ?>
+                        <img src="https://image.tmdb.org/t/p/w342<?= htmlspecialchars($movie['poster_path']) ?>"
+                            alt="Poster for <?= htmlspecialchars($movie['title']) ?>">
+                    <?php else: ?>
+                        <div class="poster-fallback">
+                            <span>🎬</span>
+                            <p><?= htmlspecialchars($movie['title']) ?></p>
+                        </div>
+                    <?php endif; ?>
                 </div>
                 <p><a href="movie.php?id=<?= (int) $movie['id'] ?>"><?= htmlspecialchars($movie['title']) ?></a></p>
                 <p>
