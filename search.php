@@ -31,7 +31,7 @@ if ($term !== '') {
 include 'includes/header.php';
 ?>
 
-<div class="wrap">
+<div class="wrap search-page">
 
     <!-- Hero: the search experience itself IS the page -->
     <div class="search-hero">

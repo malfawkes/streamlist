@@ -35,9 +35,9 @@ foreach ($genres as $g) {
 include 'includes/header.php';
 ?>
 
-<section class="wrap">
+<section class="wrap genres-page">
 
-    <h1>Browse by Genre</h1>
+    <h1 class="-h1">Browse by Genre</h1>
     <p>Pick a mood each genre links straight to its movies.</p>
 
     <?php if (empty($genres)): ?>

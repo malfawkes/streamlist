@@ -684,6 +684,7 @@ footer {
   gap: var(--space-md);
   max-width: 800px;
   margin: var(--space-lg) auto;
+  margin-bottom: var(--space-xl);
 }
 .plan-card {
   background: var(--color-surface);
@@ -856,13 +857,6 @@ footer {
   padding: var(--space-md) 0;
 }
 
-/* Sections without a .wrap child get side padding
-   (:has = modern CSS — works in current Chrome/Firefox) */
-section:not(:has(.wrap)) {
-  padding-left: 24px;
-  padding-right: 24px;
-}
-
 /* Consistent page headings */
 h1 {
   font-size: var(--fs-h1);
@@ -876,8 +870,7 @@ h2 {
   margin-bottom: var(--space-xs);
 }
 
-/* ═══ GLOBAL MOVIE CARDS ═══════════════════════════════════
-   Applies to movies.php, search.php, watchlist.php, index.php alike. */
+/* MOVIE CARDS */
 
 .card {
   display: flex;
@@ -898,8 +891,6 @@ h2 {
   box-shadow: var(--shadow-md);
 }
 
-/* Poster box: TRUE poster proportions (2:3), responsive —
-   replaces the fixed 300px height on every page consistently */
 .trending-cards .card-image {
   aspect-ratio: 2 / 3;
   height: auto;
@@ -912,9 +903,6 @@ h2 {
   border-radius: var(--radius-sm);
 }
 
-/* Card text: first <p> = title, second <p> = year/rating line
-   (first-of-type / nth-of-type target by position among p's —
-   the image div and forms don't count, buttons stay untouched) */
 .trending-cards .card > p:first-of-type a {
   color: var(--color-text);
   font-weight: var(--fw-bold);
@@ -960,9 +948,9 @@ h2 {
 }
 
 .wrap {
-  max-width: var(--max-width); /* 1600px — the design's content width */
-  margin: 0 auto; /* centers it in the viewport */
-  padding: 0 24px; /* ← THE left/right padding you're asking for */
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 24px;
 }
 
 /* SEARCH PAGE */
@@ -979,9 +967,6 @@ h2 {
   margin-top: var(--space-xs);
 }
 
-/* The attached pill: input + button form ONE shape —
-   the input's right border is removed, and the button's
-   left radius is 0, so they visually fuse */
 .search-bar {
   display: flex;
   margin-top: var(--space-md);
@@ -1077,6 +1062,25 @@ h2 {
   }
 }
 
-.trending-cards {
+.search-page .trending-cards,
+.watchlist-page .trending-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, max-content));
+  gap: 1.8rem;
+  width: 100%;
+  /* margin: 0 auto 0 0; */
+  margin-bottom: var(--space-lg);
+}
+
+.streamlist-plus-h1 {
+  padding-top: var(--space-lg);
+  text-align: center;
+}
+
+.-h1 {
+  padding-top: var(--space-md);
+}
+
+.genres-page .genre-cards {
   margin-bottom: var(--space-md);
 }

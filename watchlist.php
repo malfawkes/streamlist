@@ -42,9 +42,9 @@ $redirectValue = ($sort !== 'added') ? 'watchlist.php?sort=' . $sort : 'watchlis
 include 'includes/header.php';
 ?>
 
-<section class="wrap">
+<section class="wrap watchlist-page">
 
-<h1>My Watchlist</h1>
+    <h1 class="-h1">My Watchlist</h1>
 
     <?php if ($count > 0): ?>
         <?php if ($_SESSION['user_tier'] !== 'premium'): ?>

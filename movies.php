@@ -100,7 +100,7 @@ include 'includes/header.php';
 
 <section class="wrap">
 
-    <h1><?= $activeGenreName ? htmlspecialchars($activeGenreName) . ' Movies' : 'Trending Now' ?></h1>
+    <h1 class="-h1"><?= $activeGenreName ? htmlspecialchars($activeGenreName) . ' Movies' : 'Trending Now' ?></h1>
     <p>Browse what's new. Add anything to your watchlist.</p>
 
     <?php if ($status === 'error'): ?>

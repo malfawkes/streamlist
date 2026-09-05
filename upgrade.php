@@ -29,7 +29,7 @@ include 'includes/header.php';
 
 <section class="wrap">
 
-    <h1>StreamList Plus</h1>
+    <h1 class="streamlist-plus-h1">StreamList Plus</h1>
 
     <?php if ($status === 'upgraded'): ?>
         <p class="message message-success">You're now a Plus member unlimited watchlists and premium titles unlocked!</p>

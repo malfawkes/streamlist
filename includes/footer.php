@@ -38,6 +38,7 @@
             </div>
         </div>
 
+        <hr>
         <div class="footer-bottom">
             <p>&copy; 2026 StreamList. All rights reserved.</p>
             <div class="footer-social">
