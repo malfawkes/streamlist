@@ -1338,3 +1338,8 @@ h2 {
     margin-top: var(--space-xs);
   }
 }
+
+.cta .btn {
+  color: var(--color-secondary);
+  background: var(--color-primary);
+}

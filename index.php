@@ -35,7 +35,7 @@ include 'includes/header.php';
             <p class="hero-description">Browse trending titles, watch official trailers, and build a watchlist that's actually yours all in one calm, uncluttered place.</p>
 
             <div class="hero-buttons">
-                <a href="../register.php" class="btn btn-primary get-started">Get Started Free</a>
+                <a href="register.php" class="btn btn-primary get-started">Get Started Free</a>
                 <a href="movies.php" class="btn btn-secondary browse-trending">Browse Trending</a>
             </div>
 
@@ -220,7 +220,7 @@ include 'includes/header.php';
         <h4 class="section-heading">READY TO START WATCHING</h4>
         <p class="section-description">Join thousands of satisfied users and start your journey today!</p>
         <p class="section-subdescription">Free to browse, free to watch trailers, forever. Upgrade whenever you want more.</p>
-        <button class="btn btn-primary get-started">Get Started Free</button>
+        <a href="register.php" class="btn btn-primary get-started">Get Started Free</a>
     </div>
 </section>
 
