@@ -1176,3 +1176,165 @@ h2 {
 .upgrade-message {
   margin-inline: auto;
 }
+
+/* MOVIE DETAIL PAGE */
+
+/* Hero: full-width, fixed height, image covered + scrim + content */
+.movie-hero {
+  position: relative;
+  height: 460px;
+  display: flex;
+  align-items: flex-end; /* content anchored to the bottom edge */
+  overflow: hidden; /* clips the poster rising out */
+}
+
+/* position: absolute layers — both image and scrim fill the hero,
+   content sits above them via z-index stacking (3 layers total) */
+.movie-hero-backdrop {
+  position: absolute;
+  inset: 0; /* top/right/bottom/left: 0 — fills parent */
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%; /* bias toward the upper image —
+                                    people/faces usually sit there */
+}
+.movie-hero-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.92) 0%,
+    rgba(0, 0, 0, 0.55) 45%,
+    rgba(0, 0, 0, 0.15) 100%
+  );
+}
+
+/* Content: poster + info side by side, above the scrim (z-index) */
+.movie-hero-content {
+  position: relative;
+  z-index: 1; /* stacks above the absolute layers */
+  display: flex;
+  gap: var(--space-md);
+  align-items: flex-end;
+}
+
+/* Poster: overlaps the hero's bottom edge — pulled down by
+   a negative margin over the section boundary */
+.movie-poster {
+  width: 200px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  margin-bottom: -80px; /* THE overlap trick */
+  flex-shrink: 0;
+}
+
+.movie-hero-info {
+  color: var(--color-text-inverse);
+  max-width: 640px;
+  padding-bottom: var(--space-md);
+}
+.movie-hero-info h1 {
+  color: var(--color-text-inverse); /* white on the scrim */
+  margin-bottom: var(--space-xs);
+}
+
+.movie-meta {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+  font-size: var(--fs-body);
+  opacity: 0.9;
+  flex-wrap: wrap;
+}
+.movie-rating {
+  color: #e5b300;
+  font-weight: var(--fw-bold);
+}
+
+/* Action buttons */
+.movie-actions {
+  display: inline-block;
+  margin-top: var(--space-sm);
+  margin-right: var(--space-sm);
+}
+.movie-btn-primary {
+  background: var(--color-secondary);
+  color: var(--color-text);
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 12px 28px;
+  font-family: var(--font-body);
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-body);
+  cursor: pointer;
+  transition: opacity var(--transition-fast);
+}
+.movie-btn-primary:hover {
+  opacity: 0.85;
+}
+.movie-btn-secondary {
+  background: rgba(255, 255, 255, 0.15); /* frosted look on the scrim */
+  color: var(--color-text-inverse);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: var(--radius-pill);
+  padding: 11px 24px; /* 1px less: matches the
+                                                  bordered button's height */
+  font-family: var(--font-body);
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-body);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+.movie-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Body: generous top padding — room for the overlapping poster */
+.movie-body {
+  padding-top: calc(var(--space-lg) + 80px);
+}
+.movie-overview {
+  max-width: 720px;
+  line-height: 1.7;
+  margin-bottom: var(--space-lg);
+}
+.movie-no-trailer {
+  color: var(--color-text-muted);
+}
+
+.movie-trailer {
+  width: 100%;
+  max-width: 900px;
+  aspect-ratio: 16 / 9;
+  border: none;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+}
+
+@media (max-width: 600px) {
+  .movie-hero {
+    height: 520px;
+  }
+  .movie-hero-content {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .movie-poster {
+    margin-bottom: -48px;
+  }
+  .movie-hero-info {
+    padding-bottom: var(--space-sm);
+  }
+  .movie-body {
+    padding-top: calc(var(--space-md) + 48px);
+  }
+  .movie-actions {
+    display: block;
+  }
+  .movie-actions button {
+    width: 100%;
+    margin-top: var(--space-xs);
+  }
+}
