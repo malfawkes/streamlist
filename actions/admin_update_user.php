@@ -1,13 +1,12 @@
 <?php
-// actions/admin_update_user.php — tier flips + admin privilege changes
+// actions/admin_update_user.php — subscription management + admin privileges
 
 require_once __DIR__ . '/../includes/auth.php';
-requireAdmin();          // ⭐ THE privilege-escalation wall: a non-admin forging
-                         // this POST dies HERE with 403, before any SQL runs
+requireAdmin();     // the privilege wall — forged POSTs die here
 
 require_once __DIR__ . '/../database/db.php';
 
-if (!isset($_POST['toggle-tier']) && !isset($_POST['toggle-admin'])) {
+if (!isset($_POST['set-subscription']) && !isset($_POST['toggle-admin'])) {
     header('Location: ../admin.php');
     exit;
 }
@@ -18,27 +17,54 @@ if ($targetId === false || $targetId < 1) {
     exit;
 }
 
-// Fixed redirect target — admin actions always land on admin.php.
-// No allow-list needed: the destination is never user-supplied.
  $redirect = '../admin.php';
 
 try {
-    if (isset($_POST['toggle-tier'])) {
-        // Flip via reported current state (watched-toggle pattern)
-        $newTier = ($_POST['current-tier'] ?? '') === 'premium' ? 'free' : 'premium';
+    // ── SUBSCRIPTION: grant months or revoke ────────────────────
+    if (isset($_POST['set-subscription'])) {
+        $choice = $_POST['months'] ?? '';
 
-        $stmt = $pdo->prepare('UPDATE users SET tier = :tier WHERE id = :id');
-        $stmt->bindValue(':tier', $newTier);
-        $stmt->bindValue(':id', $targetId, PDO::PARAM_INT);
-        $stmt->execute();
+        if ($choice === 'revoke') {
+            $stmt = $pdo->prepare("UPDATE users SET tier = 'free', tier_expires_at = NULL
+                                   WHERE id = :id");
+            $stmt->bindValue(':id', $targetId, PDO::PARAM_INT);
+            $stmt->execute();
+        } elseif (in_array($choice, ['1', '3', '6', '12'], true)) {
+            // stack from the user's current end date if still active
+            $stmt = $pdo->prepare('SELECT tier, tier_expires_at FROM users WHERE id = :id');
+            $stmt->bindValue(':id', $targetId, PDO::PARAM_INT);
+            $stmt->execute();
+            $target = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        header('Location: ' . $redirect . '?status=tier');
+            $today = date('Y-m-d');
+            $base = ($target['tier'] === 'premium'
+                     && $target['tier_expires_at'] !== null
+                     && $target['tier_expires_at'] > $today)
+                ? $target['tier_expires_at'] : $today;
+
+            $expiry = date('Y-m-d', strtotime($base . ' +' . (int) $choice . ' months'));
+
+            $stmt = $pdo->prepare("UPDATE users SET tier = 'premium', tier_expires_at = :e
+                                   WHERE id = :id");
+            $stmt->bindValue(':e', $expiry);
+            $stmt->bindValue(':id', $targetId, PDO::PARAM_INT);
+            $stmt->execute();
+        } else {
+            header('Location: ' . $redirect . '?status=error&message='
+                 . urlencode('Invalid duration.'));
+            exit;
+        }
+
+        // If the ADMIN edited THEMSELVES, sync their own session cache
+        if ($targetId === currentUserId()) {
+            $_SESSION['user_tier'] = ($choice === 'revoke') ? 'free' : 'premium';
+        }
+
+        header('Location: ' . $redirect . '?status=sub');
         exit;
     }
 
-    // ── toggle-admin ──
-    // ⭐ Lockout guard, server-side (the UI hides the button; this ENFORCES it —
-    // defense at the layer that matters, since UI can be bypassed)
+    // ── ADMIN PRIVILEGE TOGGLE (unchanged logic) ────────────────
     $currentlyAdmin = ((int) ($_POST['current-admin'] ?? 0) === 1);
     if ($currentlyAdmin && $targetId === currentUserId()) {
         header('Location: ' . $redirect . '?status=error&message='

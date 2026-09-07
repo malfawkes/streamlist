@@ -29,9 +29,6 @@ require_once __DIR__ . '/auth.php';
         <nav class="nav-links">
             <a href="movies.php">Trending</a>
             <a href="genres.php">Genres</a>
-            <?php if (isAdmin()): ?>
-                <a href="admin.php">Admin</a>
-            <?php endif; ?>
             <a href="upgrade.php">Pricing</a>
             <a href="index.php#about">About</a>
         </nav>
@@ -55,7 +52,13 @@ require_once __DIR__ . '/auth.php';
 
                 <div class="profile-menu">
                     <button type="button" class="profile-btn">
-                        <span class="profile-avatar"><?= strtoupper(htmlspecialchars(mb_substr($_SESSION['user_name'], 0, 1))) ?></span>
+                        <span class="profile-avatar">
+                            <?php if (!empty($_SESSION['user_avatar'])): ?>
+                                <img src="<?= htmlspecialchars($_SESSION['user_avatar']) ?>" alt="">
+                            <?php else: ?>
+                                <?= strtoupper(htmlspecialchars(mb_substr($_SESSION['user_name'], 0, 1))) ?>
+                            <?php endif; ?>
+                        </span>
                         <span class="profile-name"><?= htmlspecialchars($_SESSION['user_name']) ?></span>
                         <span class="profile-caret">▾</span>
                     </button>
@@ -66,6 +69,10 @@ require_once __DIR__ . '/auth.php';
                             <p class="profile-dropdown-email"><?= htmlspecialchars($_SESSION['user_email'] ?? '') ?></p>
                             <p class="profile-dropdown-tier"><?= htmlspecialchars($_SESSION['user_tier'] ?? 'free') ?> member</p>
                         </div>
+                        <?php if (isAdmin()): ?>
+                            <a href="admin.php" class="profile-dropdown-item">⚙ Admin Panel</a>
+                        <?php endif; ?>
+                        <a href="profile.php" class="profile-dropdown-item">Profile</a>
                         <a href="watchlist.php" class="profile-dropdown-item">My Watchlist</a>
                         <a href="upgrade.php" class="profile-dropdown-item">Subscription</a>
                         <a href="logout.php" class="profile-dropdown-item profile-dropdown-logout">Log Out</a>

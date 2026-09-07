@@ -1,15 +1,16 @@
 <?php
-// admin.php — admin dashboard: stats, user management, movie management
+// admin.php — admin dashboard: stats, user management (subscriptions),
+// movie management (search + delete). No admin-granting UI (SQL only).
 
 require_once 'includes/auth.php';
-requireAdmin();                 // authentication + authorization, both gates
+requireAdmin();                 // authentication + authorization
 
 require_once 'database/db.php';
 
  $status  = $_GET['status']  ?? null;
  $message = $_GET['message'] ?? null;
 
-// ── Stats: constant SQL, no user input → query() shortcut ────────
+// ── Stats ────────────────────────────────────────────────────────
  $statUsers     = (int) $pdo->query('SELECT COUNT(*) FROM users')->fetchColumn();
  $statPremium   = (int) $pdo->query("SELECT COUNT(*) FROM users WHERE tier = 'premium'")->fetchColumn();
  $statAdmins    = (int) $pdo->query('SELECT COUNT(*) FROM users WHERE is_admin = 1')->fetchColumn();
@@ -18,19 +19,18 @@ require_once 'database/db.php';
  $statWatchlist = (int) $pdo->query('SELECT COUNT(*) FROM watch_list')->fetchColumn();
  $statHistory   = (int) $pdo->query('SELECT COUNT(*) FROM watch_history')->fetchColumn();
 
-// ── Users + their watchlist sizes ───────────────────────────────
-// LEFT JOIN keeps users with zero watchlist rows; GROUP BY collapses
-// to one row per user with COUNT() as the aggregate — genre-chips query, reused
+// ── Users + watchlist counts + subscription expiry ──────────────
+// tier_expires_at in BOTH the SELECT and the GROUP BY (ONLY_FULL_GROUP_BY rule)
  $users = $pdo->query(
-    'SELECT u.id, u.name, u.email, u.tier, u.is_admin, u.created_at,
+    'SELECT u.id, u.name, u.email, u.tier, u.is_admin, u.tier_expires_at, u.created_at,
             COUNT(wl.id) AS watchlist_count
      FROM users u
      LEFT JOIN watch_list wl ON wl.user_id = u.id
-     GROUP BY u.id, u.name, u.email, u.tier, u.is_admin, u.created_at
+     GROUP BY u.id, u.name, u.email, u.tier, u.is_admin, u.tier_expires_at, u.created_at
      ORDER BY u.created_at DESC'
 )->fetchAll(PDO::FETCH_ASSOC);
 
-// ── Movie lookup (admin's search-and-delete) ─────────────────────
+// ── Movie lookup (search + delete) ──────────────────────────────
  $movieTerm    = trim($_GET['movie_search'] ?? '');
  $movieResults = [];
 if ($movieTerm !== '') {
@@ -52,16 +52,16 @@ include 'includes/header.php';
 
     <h1>Admin</h1>
 
-    <?php if ($status === 'tier'): ?>
-        <p class="message message-success">User tier updated.</p>
-    <?php elseif ($status === 'admin'): ?>
-        <p class="message message-success">Admin privileges updated.</p>
+    <?php if ($status === 'sub'): ?>
+        <p class="message message-success">Subscription updated.</p>
     <?php elseif ($status === 'user-deleted'): ?>
         <p class="message message-success">User deleted — <?= (int) ($_GET['wl'] ?? 0) ?>
             watchlist entries removed automatically (ON DELETE CASCADE).</p>
     <?php elseif ($status === 'movie-deleted'): ?>
         <p class="message message-success">Movie deleted — <?= (int) ($_GET['wl'] ?? 0) ?>
             watchlist entries removed automatically (ON DELETE CASCADE).</p>
+    <?php elseif ($status === 'admin'): ?>
+        <p class="message message-success">Admin privileges updated.</p>
     <?php elseif ($status === 'error'): ?>
         <p class="message message-error"><?= htmlspecialchars($message) ?></p>
     <?php endif; ?>
@@ -77,11 +77,11 @@ include 'includes/header.php';
         <div class="stat-card"><p class="stat-value"><?= $statHistory ?></p><p class="stat-label">Watch history rows</p></div>
     </div>
 
-    <!-- ── User management ── -->
+    <!-- ═══ USERS TABLE — subscriptions live HERE ═══ -->
     <h2>Users</h2>
     <table class="admin-table">
         <tr>
-            <th>User</th><th>Email</th><th>Tier</th><th>Role</th>
+            <th>User</th><th>Email</th><th>Subscription</th><th>Role</th>
             <th>Watchlist</th><th>Joined</th><th>Actions</th>
         </tr>
         <?php foreach ($users as $u): ?>
@@ -89,32 +89,29 @@ include 'includes/header.php';
             <tr>
                 <td><?= htmlspecialchars($u['name']) ?><?= $isSelf ? ' (you)' : '' ?></td>
                 <td><?= htmlspecialchars($u['email']) ?></td>
-                <td><?= htmlspecialchars($u['tier']) ?></td>
+                <td>
+                    <?= $u['tier'] === 'premium'
+                        ? '★ premium<br><small>until ' . htmlspecialchars($u['tier_expires_at'] ?? '—') . '</small>'
+                        : 'free' ?>
+                </td>
                 <td><?= ((int) $u['is_admin'] === 1) ? '<span class="admin-badge">ADMIN</span>' : 'user' ?></td>
                 <td><?= (int) $u['watchlist_count'] ?></td>
                 <td><?= date('M j, Y', strtotime($u['created_at'])) ?></td>
                 <td>
-                    <!-- Tier flip: hidden field reports current state (watched-toggle pattern) -->
-                    <form method="post" action="actions/admin_update_user.php">
+                    <!-- ── SUBSCRIPTION MANAGER: on USER rows ── -->
+                    <form method="post" action="actions/admin_update_user.php" class="admin-sub-form">
                         <input type="hidden" name="user_id" value="<?= (int) $u['id'] ?>">
-                        <input type="hidden" name="current-tier" value="<?= htmlspecialchars($u['tier']) ?>">
-                        <button name="toggle-tier" type="submit">
-                            <?= $u['tier'] === 'premium' ? 'Set Free' : 'Set Premium' ?>
-                        </button>
+                        <select name="months">
+                            <option value="1">+1 mo</option>
+                            <option value="3">+3 mo</option>
+                            <option value="6">+6 mo</option>
+                            <option value="12">+1 yr</option>
+                            <option value="revoke">revoke</option>
+                        </select>
+                        <button name="set-subscription" type="submit">Apply</button>
                     </form>
 
-                    <?php if ($isSelf): ?>
-                        <!-- Lockout guard: no self-demote, no self-delete. Server enforces too. -->
-                        <span class="admin-muted">—</span>
-                    <?php else: ?>
-                        <form method="post" action="actions/admin_update_user.php">
-                            <input type="hidden" name="user_id" value="<?= (int) $u['id'] ?>">
-                            <input type="hidden" name="current-admin" value="<?= (int) $u['is_admin'] ?>">
-                            <button name="toggle-admin" type="submit">
-                                <?= ((int) $u['is_admin'] === 1) ? 'Revoke Admin' : 'Make Admin' ?>
-                            </button>
-                        </form>
-
+                    <?php if (!$isSelf): ?>
                         <form method="post" action="actions/admin_delete_user.php"
                               onsubmit="return confirm('Delete this user? Their watchlist and history are removed too.');">
                             <input type="hidden" name="user_id" value="<?= (int) $u['id'] ?>">
@@ -126,7 +123,7 @@ include 'includes/header.php';
         <?php endforeach; ?>
     </table>
 
-    <!-- ── Movie management ── -->
+    <!-- ═══ MOVIES TABLE — search + delete ONLY (no subscription forms here!) ═══ -->
     <h2>Movies</h2>
     <form method="get" action="admin.php" class="admin-movie-search">
         <input type="text" name="movie_search"
