@@ -43,7 +43,7 @@ require_once __DIR__ . '/auth.php';
             </form>
         <?php endif; ?>
 
-        <!-- Account area: tier-aware -->
+        
         <div class="nav-auth">
             <?php if (isLoggedIn()): ?>
                 <?php if (($_SESSION['user_tier'] ?? 'free') === 'premium'): ?>
@@ -52,9 +52,24 @@ require_once __DIR__ . '/auth.php';
                     <a href="upgrade.php" class="upgrade-link">Upgrade</a>
                 <?php endif; ?>
 
-                <span class="login">Hi, <?= htmlspecialchars($_SESSION['user_name']) ?></span>
-                <a href="watchlist.php" class="login">My Watchlist</a>
-                <a href="logout.php" class="btn btn-primary">Log Out</a>
+                <div class="profile-menu">
+                    <button type="button" class="profile-btn">
+                        <span class="profile-avatar"><?= strtoupper(htmlspecialchars(mb_substr($_SESSION['user_name'], 0, 1))) ?></span>
+                        <span class="profile-name"><?= htmlspecialchars($_SESSION['user_name']) ?></span>
+                        <span class="profile-caret">▾</span>
+                    </button>
+
+                    <div class="profile-dropdown">
+                        <div class="profile-dropdown-header">
+                            <p class="profile-dropdown-name"><?= htmlspecialchars($_SESSION['user_name']) ?></p>
+                            <p class="profile-dropdown-email"><?= htmlspecialchars($_SESSION['user_email'] ?? '') ?></p>
+                            <p class="profile-dropdown-tier"><?= htmlspecialchars($_SESSION['user_tier'] ?? 'free') ?> member</p>
+                        </div>
+                        <a href="watchlist.php" class="profile-dropdown-item">My Watchlist</a>
+                        <a href="upgrade.php" class="profile-dropdown-item">Subscription</a>
+                        <a href="logout.php" class="profile-dropdown-item profile-dropdown-logout">Log Out</a>
+                    </div>
+                </div>
             <?php else: ?>
                 <a href="login.php" class="login">Log In</a>
                 <a href="register.php" class="btn btn-primary">Sign Up</a>
