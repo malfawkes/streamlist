@@ -13,6 +13,7 @@ require_once __DIR__ . '/auth.php';
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="css/style.css">
+    <script src="js/main.js"></script>
 </head>
 <body>
 
