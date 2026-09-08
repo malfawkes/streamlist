@@ -1,9 +1,5 @@
 <?php
-/**
- * db.php
- * Shared PDO database connection.
- * Include this file wherever database access is needed.
- */
+// db.php — shared PDO connection
 
 require_once __DIR__ . '/configHidden.php';
 
@@ -15,5 +11,6 @@ try {
     );
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
-    die("Database connection failed: " . $e->getMessage());
+    error_log('DB connection failed: ' . $e->getMessage());   // real error → log
+    die('Service temporarily unavailable. Please try again.'); // generic → user
 }

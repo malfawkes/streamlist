@@ -19,7 +19,7 @@ require_once 'database/db.php';
  $statWatchlist = (int) $pdo->query('SELECT COUNT(*) FROM watch_list')->fetchColumn();
  $statHistory   = (int) $pdo->query('SELECT COUNT(*) FROM watch_history')->fetchColumn();
 
-// ── Users + watchlist counts + subscription expir
+// Users + watchlist counts + subscription expir
 // tier_expires_at in BOTH the SELECT and the GROUP BY (ONLY_FULL_GROUP_BY rule)
  $users = $pdo->query(
     'SELECT u.id, u.name, u.email, u.tier, u.is_admin, u.tier_expires_at, u.created_at,
@@ -30,7 +30,7 @@ require_once 'database/db.php';
      ORDER BY u.created_at DESC'
 )->fetchAll(PDO::FETCH_ASSOC);
 
-// ── Movie lookup (search + delete)
+// Movie lookup (search + delete)
  $movieTerm    = trim($_GET['movie_search'] ?? '');
  $movieResults = [];
 if ($movieTerm !== '') {
@@ -66,7 +66,7 @@ include 'includes/header.php';
         <p class="message message-error"><?= htmlspecialchars($message) ?></p>
     <?php endif; ?>
 
-    <!-- ── Stats ── -->
+    <!-- Stats -->
     <div class="admin-stats">
         <div class="stat-card"><p class="stat-value"><?= $statUsers ?></p><p class="stat-label">Users</p></div>
         <div class="stat-card"><p class="stat-value"><?= $statPremium ?></p><p class="stat-label">Premium users</p></div>
@@ -77,7 +77,7 @@ include 'includes/header.php';
         <div class="stat-card"><p class="stat-value"><?= $statHistory ?></p><p class="stat-label">Watch history rows</p></div>
     </div>
 
-    <!-- ═══ USERS TABLE — subscriptions live HERE ═══ -->
+    <!-- USERS TABLE — subscriptions live HERE -->
     <h2>Users</h2>
     <table class="admin-table">
         <tr>
@@ -123,7 +123,7 @@ include 'includes/header.php';
         <?php endforeach; ?>
     </table>
 
-    <!-- ═══ MOVIES TABLE — search + delete ONLY (no subscription forms here!) ═══ -->
+    <!-- MOVIES TABLE — search + delete ONLY (no subscription forms here!) -->
     <h2>Movies</h2>
     <form method="get" action="admin.php" class="admin-movie-search">
         <input type="text" name="movie_search"

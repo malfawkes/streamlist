@@ -7,16 +7,16 @@ requireLogin();
 require_once 'database/db.php';
 
 // Pagination
- $page = filter_var($_GET['page'] ?? 1, FILTER_VALIDATE_INT);
+$page = filter_var($_GET['page'] ?? 1, FILTER_VALIDATE_INT);
 if ($page === false || $page < 1) { $page = 1; }
 
 //  Genre filter
- $genreId = filter_var($_GET['genre'] ?? '', FILTER_VALIDATE_INT);
- $hasGenre = ($genreId !== false && $genreId > 0);
+$genreId = filter_var($_GET['genre'] ?? '', FILTER_VALIDATE_INT);
+$hasGenre = ($genreId !== false && $genreId > 0);
 
 // Sorting (allow-listed map → only our strings reach the SQL)
- $sort = $_GET['sort'] ?? 'date';
- $sortMap = [
+$sort = $_GET['sort'] ?? 'date';
+$sortMap = [
     'date'   => 'm.release_date DESC',
     'rating' => 'm.rating DESC',
     'title'  => 'm.title ASC',

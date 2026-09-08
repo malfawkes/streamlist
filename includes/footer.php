@@ -17,7 +17,6 @@
                     <ul>
                         <li><a href="index.php">Home</a></li>
                         <li><a href="movies.php">Movies</a></li>
-                        <li><a href="tv-shows.php">TV Shows</a></li>
                         <li><a href="watchlist.php">Watchlist</a></li>
                     </ul>
                 </div>

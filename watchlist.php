@@ -6,8 +6,8 @@ requireLogin();
 
 require_once 'database/db.php';
 
- $sort = $_GET['sort'] ?? 'added';
- $sortMap = [
+$sort = $_GET['sort'] ?? 'added';
+$sortMap = [
     'added'  => 'wl.created_at DESC',
     'date'   => 'm.release_date DESC',
     'name'   => 'm.title ASC',
@@ -20,24 +20,24 @@ $userId = currentUserId();
 
 $redirectValue = ($sort !== 'added') ? 'watchlist.php?sort=' . $sort : 'watchlist.php';
 
- $stmt = $pdo->prepare(
+$stmt = $pdo->prepare(
     "SELECT m.id, m.title, m.poster_path, m.release_date, m.rating, m.is_premium,
             wl.created_at,
             (wh.id IS NOT NULL) AS is_watched
-     FROM watch_list wl
-     INNER JOIN movies m ON m.id = wl.movie_id
-     LEFT JOIN watch_history wh ON wh.movie_id = m.id AND wh.user_id = wl.user_id
-     WHERE wl.user_id = :user_id
-     ORDER BY {$orderBy}"
+    FROM watch_list wl
+    INNER JOIN movies m ON m.id = wl.movie_id
+    LEFT JOIN watch_history wh ON wh.movie_id = m.id AND wh.user_id = wl.user_id
+    WHERE wl.user_id = :user_id
+    ORDER BY {$orderBy}"
 );
- $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
- $stmt->execute();
- $watchlist = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
+$stmt->execute();
+$watchlist = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
- $count = count($watchlist);
+$count = count($watchlist);
 
- $status  = $_GET['status']  ?? null;
- $message = $_GET['message'] ?? null;
+$status  = $_GET['status']  ?? null;
+$message = $_GET['message'] ?? null;
 
 include 'includes/header.php';
 ?>

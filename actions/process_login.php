@@ -28,7 +28,7 @@ if (!empty($errors)) {
 
 // 3. FETCH — one user by email
 try {
-     $stmt = $pdo->prepare('SELECT id, name, email, password_hash, tier, is_admin, avatar_path, tier_expires_at
+    $stmt = $pdo->prepare('SELECT id, name, email, password_hash, tier, is_admin, avatar_path, tier_expires_at
                             FROM users WHERE email = :email');
     $stmt->bindValue(':email', $email);
     $stmt->execute();
@@ -40,7 +40,7 @@ try {
         exit;
     }
 
-    // ── Subscription expiry: premium whose date passed → downgrade NOW ──
+    // Subscription expiry: premium whose date passed → downgrade NOW
     // DB write + local fix, so the session below stores the corrected tier
     if ($user['tier'] === 'premium'
         && $user['tier_expires_at'] !== null
