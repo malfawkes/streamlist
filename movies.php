@@ -6,15 +6,15 @@ requireLogin();
 
 require_once 'database/db.php';
 
-// ── Pagination ────────────────────────────────────────────────────
+// Pagination
  $page = filter_var($_GET['page'] ?? 1, FILTER_VALIDATE_INT);
 if ($page === false || $page < 1) { $page = 1; }
 
-// ── Genre filter ─────────────────────────────────────────────────
+//  Genre filter
  $genreId = filter_var($_GET['genre'] ?? '', FILTER_VALIDATE_INT);
  $hasGenre = ($genreId !== false && $genreId > 0);
 
-// ── Sorting (allow-listed map → only our strings reach the SQL) ──
+// Sorting (allow-listed map → only our strings reach the SQL)
  $sort = $_GET['sort'] ?? 'date';
  $sortMap = [
     'date'   => 'm.release_date DESC',
@@ -24,7 +24,7 @@ if ($page === false || $page < 1) { $page = 1; }
 if (!array_key_exists($sort, $sortMap)) { $sort = 'date'; }
  $orderBy = $sortMap[$sort];
 
-// ── Active genre name + unknown-genre guard ──────────────────────
+//  Active genre name + unknown-genre guard 
  $activeGenreName = null;
 if ($hasGenre) {
     $stmtName = $pdo->prepare('SELECT name FROM genres WHERE id = :gid');
@@ -40,7 +40,7 @@ if ($hasGenre && $activeGenreName === null) {
  $perPage = 24;
  $offset  = ($page - 1) * $perPage;
 
-// ── The movie query: genre-filtered OR full catalog ──────────────
+//  The movie query: genre-filtered OR full catalog 
 if ($hasGenre) {
     $c = $pdo->prepare('SELECT COUNT(*) FROM movies m
                         INNER JOIN movie_genres mg ON mg.movie_id = m.id
@@ -74,7 +74,7 @@ if ($hasGenre) {
 
  $totalPages = (int) ceil($totalMovies / $perPage);
 
-// ── Genre chips data ─────────────────────────────────────────────
+// Genre chips data 
  $genres = $pdo->query(
     'SELECT g.id, g.name, COUNT(mg.movie_id) AS movie_count
      FROM genres g
@@ -83,7 +83,7 @@ if ($hasGenre) {
      ORDER BY g.name'
 )->fetchAll(PDO::FETCH_ASSOC);
 
-// ── Redirect target for this page's add-forms (genre + sort kept) ──
+//  Redirect target for this page's add-forms (genre + sort kept)
  $redirectValue = 'movies.php';
  $formParams = [];
 if ($hasGenre)       { $formParams[] = 'genre=' . (int) $genreId; }

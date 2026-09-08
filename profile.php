@@ -64,8 +64,6 @@ include 'includes/header.php';
     </form>
 
     <h2>Profile picture</h2>
-    <!-- ⚠️ enctype IS THE WHOLE TRICK: without it $_FILES is EMPTY —
-         a silent no-error failure (the cruelest bug family) -->
     <form method="post" action="actions/process_profile.php"
           enctype="multipart/form-data" class="profile-form">
         <label for="avatar">Choose an image (JPG, PNG or GIF, max 2 MB):</label><br>

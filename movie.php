@@ -54,8 +54,6 @@ include 'includes/header.php';
              src="https://image.tmdb.org/t/p/w1280<?= htmlspecialchars($movie['backdrop_path']) ?>"
              alt="<?= htmlspecialchars($movie['title']) ?>">
     <?php endif; ?>
-    <!-- the scrim: a gradient from black → transparent, sitting ON TOP of
-         the image. Legible text over ANY backdrop (dark or bright) -->
     <div class="movie-hero-scrim"></div>
 
     <div class="wrap movie-hero-content">

@@ -1,5 +1,5 @@
 <?php
-// seed_from_tmdb.php v5 — adds genre capture. Re-runnable. Movies only.
+// seed_from_tmdb.php — adds genre capture. Re-runnable. Movies only.
 
 set_time_limit(0);
 

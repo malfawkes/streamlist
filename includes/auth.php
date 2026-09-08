@@ -18,12 +18,9 @@ function isLoggedIn(): bool
 
 function requireLogin(): void
 {
-    // Page-level bouncer: call at the top of any protected page
     if (!isLoggedIn()) {
-        // Absolute URL via SITE_URL → works from ANY folder depth
-        // (no ../ vs . path headaches like our redirects had)
         header('Location: ' . SITE_URL . '/login.php');
-        exit;   // redirect + exit — always together
+        exit;
     }
 }
 
@@ -34,7 +31,6 @@ function currentUserId(): ?int
 
 function requireGuest(): void
 {
-    // Mirror of requireLogin(): bounces LOGGED-IN users away from auth pages
     if (isLoggedIn()) {
         header('Location: ' . SITE_URL . '/movies.php');
         exit;
@@ -44,7 +40,6 @@ function requireGuest(): void
 
 function isAdmin(): bool
 {
-    // ?? 0: sessions from before this feature lack the key → safely non-admin
     return ($_SESSION['is_admin'] ?? 0) === 1;
 }
 

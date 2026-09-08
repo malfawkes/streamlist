@@ -21,13 +21,11 @@ if ($movieId === false || $movieId < 1) {
     exit;
 }
 
- $userId = currentUserId();   // from session — see the ⭐ note in file #9
+ $userId = currentUserId();
 
 try {
-    // ⭐⭐ THE critical WHERE clause of this whole phase:
     $stmt = $pdo->prepare('DELETE FROM watch_list
                            WHERE user_id = :user_id AND movie_id = :movie_id');
-    //                       ^ yours AND   ^ this movie — BOTH, always
     $stmt->bindValue(':user_id', $userId, PDO::PARAM_INT);
     $stmt->bindValue(':movie_id', $movieId, PDO::PARAM_INT);
     $stmt->execute();

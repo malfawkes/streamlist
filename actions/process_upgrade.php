@@ -18,7 +18,7 @@ if (!isset($_POST['checkout']) && !isset($_POST['downgrade'])) {
 
  $userId = currentUserId();
 
-// ── CANCEL / DOWNGRADE ───────────────────────────────────────────
+//  CANCEL / DOWNGRADE 
 if (isset($_POST['downgrade'])) {
     try {
         $stmt = $pdo->prepare("UPDATE users SET tier = 'free', tier_expires_at = NULL
@@ -37,7 +37,7 @@ if (isset($_POST['downgrade'])) {
     }
 }
 
-// ── CHECKOUT ─────────────────────────────────────────────────────
+//  CHECKOUT 
  $months = $_POST['duration'] ?? '';
 if (!in_array($months, ['1', '3', '6', '12'], true)) {
     header('Location: ../upgrade.php?status=error&message='
@@ -64,13 +64,10 @@ if (!empty($errors)) {
     exit;
 }
 
-// ⭐ THE SECURITY MOMENT: validated → used → DESTROYED.
 // No storage, no logging, no session. Only tier + expiry ever persist.
 unset($cardName, $cardNumber, $cardExpiry, $cardCvv);
 
 try {
-    // Duration stacking: renewing while active extends from the current
-    // end date; a lapsed/expired sub restarts from today
     $today = date('Y-m-d');
     $stmt = $pdo->prepare('SELECT tier, tier_expires_at FROM users WHERE id = :id');
     $stmt->bindValue(':id', $userId, PDO::PARAM_INT);

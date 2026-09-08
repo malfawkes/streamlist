@@ -3,14 +3,14 @@
 // movie management (search + delete). No admin-granting UI (SQL only).
 
 require_once 'includes/auth.php';
-requireAdmin();                 // authentication + authorization
+requireAdmin();
 
 require_once 'database/db.php';
 
  $status  = $_GET['status']  ?? null;
  $message = $_GET['message'] ?? null;
 
-// ── Stats ────────────────────────────────────────────────────────
+// Stats
  $statUsers     = (int) $pdo->query('SELECT COUNT(*) FROM users')->fetchColumn();
  $statPremium   = (int) $pdo->query("SELECT COUNT(*) FROM users WHERE tier = 'premium'")->fetchColumn();
  $statAdmins    = (int) $pdo->query('SELECT COUNT(*) FROM users WHERE is_admin = 1')->fetchColumn();
@@ -19,7 +19,7 @@ require_once 'database/db.php';
  $statWatchlist = (int) $pdo->query('SELECT COUNT(*) FROM watch_list')->fetchColumn();
  $statHistory   = (int) $pdo->query('SELECT COUNT(*) FROM watch_history')->fetchColumn();
 
-// ── Users + watchlist counts + subscription expiry ──────────────
+// ── Users + watchlist counts + subscription expir
 // tier_expires_at in BOTH the SELECT and the GROUP BY (ONLY_FULL_GROUP_BY rule)
  $users = $pdo->query(
     'SELECT u.id, u.name, u.email, u.tier, u.is_admin, u.tier_expires_at, u.created_at,
@@ -30,7 +30,7 @@ require_once 'database/db.php';
      ORDER BY u.created_at DESC'
 )->fetchAll(PDO::FETCH_ASSOC);
 
-// ── Movie lookup (search + delete) ──────────────────────────────
+// ── Movie lookup (search + delete)
  $movieTerm    = trim($_GET['movie_search'] ?? '');
  $movieResults = [];
 if ($movieTerm !== '') {

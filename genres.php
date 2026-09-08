@@ -16,7 +16,6 @@ require_once 'database/db.php';
 )->fetchAll(PDO::FETCH_ASSOC);
 
 // Per genre: its 4 highest-rated movies (posters make the cards visual).
-// One small query per genre — ~19 genres, trivial for the DB at this scale.
  $samples = [];
  $stmtSamples = $pdo->prepare(
     'SELECT m.id, m.title, m.poster_path

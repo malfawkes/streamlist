@@ -19,7 +19,7 @@ if (!isset($_POST['save-username']) && !isset($_POST['upload-avatar'])) {
 
  $userId = currentUserId();   // identity from session — never from the form
 
-// ── 1. USERNAME CHANGE ───────────────────────────────────────────
+// USERNAME CHANGE 
 if (isset($_POST['save-username'])) {
 
     $name = trim($_POST['name'] ?? '');
@@ -55,7 +55,7 @@ if (isset($_POST['save-username'])) {
     }
 }
 
-// ── 2. AVATAR UPLOAD — the file-handling security chain ──────────
+// 2. AVATAR UPLOAD — the file-handling security chain
 if (isset($_POST['upload-avatar'])) {
 
     // 1. Did a file arrive at all, and cleanly?
