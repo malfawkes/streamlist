@@ -1614,3 +1614,50 @@ h2 {
 .upgrade-wrap .message {
   margin-inline: auto;
 }
+
+/* MOVIE CREDITS */
+
+.movie-credits-line {
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-sm);
+}
+.movie-genres {
+  margin: 0 0 var(--space-lg);
+}
+
+.cast-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+.cast-card {
+  text-align: center;
+}
+.cast-photo {
+  width: 96px;
+  height: 96px;
+  margin: 0 auto var(--space-xs);
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  font-weight: var(--fw-bold);
+}
+.cast-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.cast-name {
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-small);
+}
+.cast-character {
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
