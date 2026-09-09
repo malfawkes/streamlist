@@ -38,20 +38,28 @@ if (isset($_POST['downgrade'])) {
 }
 
 //  CHECKOUT 
- $months = $_POST['duration'] ?? '';
-if (!in_array($months, ['1', '3', '6', '12'], true)) {
-    header('Location: ../upgrade.php?status=error&message='
-         . urlencode('Choose a subscription duration.'));
+$planId = filter_var($_POST['plan_id'] ?? '', FILTER_VALIDATE_INT);
+if ($planId === false) {
+    header('Location: ../upgrade.php?status=error&message=' . urlencode('Choose a plan.'));
     exit;
 }
- $months = (int) $months;
+ $stmt = $pdo->prepare('SELECT months, price, label FROM plans
+                       WHERE id = :id AND is_active = 1');
+ $stmt->bindValue(':id', $planId, PDO::PARAM_INT);
+ $stmt->execute();
+ $plan = $stmt->fetch(PDO::FETCH_ASSOC);
+if (!$plan) {
+    header('Location: ../upgrade.php?status=error&message=' . urlencode('Choose a plan.'));
+    exit;
+}
+$months = (int) $plan['months'];
 
 // Validate every card field — same validator discipline as registration
- $errors = [];
- $cardName   = trim($_POST['full_name']  ?? '');
- $cardNumber = $_POST['card_number'] ?? '';
- $cardExpiry = trim($_POST['card_expiry'] ?? '');
- $cardCvv    = trim($_POST['card_cvv']    ?? '');
+$errors = [];
+$cardName   = trim($_POST['full_name']  ?? '');
+$cardNumber = $_POST['card_number'] ?? '';
+$cardExpiry = trim($_POST['card_expiry'] ?? '');
+$cardCvv    = trim($_POST['card_cvv']    ?? '');
 
 if ($e = validateRequired($cardName, 'Name on card')) { $errors[] = $e; }
 if ($e = validateCardNumber($cardNumber))             { $errors[] = $e; }

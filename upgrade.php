@@ -1,17 +1,15 @@
 <?php
-// upgrade.php — StreamList Plus: plans, simulated checkout, manage/downgrade
+// upgrade.php — StreamList Plus: DB-driven plans, simulated checkout, manage/downgrade
 
 require_once 'includes/auth.php';
 requireLogin();
 
 require_once 'database/db.php';
 
- $plans = [
-    1  => ['label' => '1 Month',  'price' => 4.99,  'per' => 4.99],
-    3  => ['label' => '3 Months', 'price' => 12.99, 'per' => 4.33],
-    6  => ['label' => '6 Months', 'price' => 23.99, 'per' => 4.00],
-    12 => ['label' => '1 Year',   'price' => 39.99, 'per' => 3.33],
-];
+// ── Plans are DATA now — the admin manages offerings without touching code.
+// (This replaces the old hardcoded $plans array.)
+ $plans = $pdo->query('SELECT id, label, months, price FROM plans
+                      WHERE is_active = 1 ORDER BY months')->fetchAll(PDO::FETCH_ASSOC);
 
 // Fresh plan status from the DB (never trust the session cache for display)
  $stmt = $pdo->prepare('SELECT tier, tier_expires_at FROM users WHERE id = :id');
@@ -51,11 +49,12 @@ include 'includes/header.php';
         <p class="message message-error"><?= htmlspecialchars($message) ?></p>
     <?php elseif ($status === 'blocked' && $blockedTitle): ?>
         <p class="message message-error"><strong><?= htmlspecialchars($blockedTitle) ?></strong>
-        is a Plus title subscribe below to unlock it.</p>
+        is a Plus title — subscribe below to unlock it.</p>
     <?php endif; ?>
 
     <?php if ($isPremium): ?>
-        <p class="plan-status">Current plan: <strong>Premium</strong> active until <?= htmlspecialchars($me['tier_expires_at'] ?? '—') ?></p>
+        <p class="plan-status">★ Current plan: <strong>Premium</strong>
+        active until <?= htmlspecialchars($me['tier_expires_at'] ?? '—') ?></p>
     <?php endif; ?>
 
     <div class="plan-grid">
@@ -71,8 +70,10 @@ include 'includes/header.php';
         </div>
 
         <div class="plan-card plan-highlight">
-            <h2>StreamList Plus</h2>
-            <p class="plan-price">from $3.33<span class="plan-per">/month</span></p>
+            <h2 class="streamlist-plus-h1">StreamList Plus</h2>
+            <p class="plan-price">from $<?= $plans
+                ? number_format((float) $plans[0]['price'] / (int) $plans[0]['months'], 2)
+                : '0.00' ?><span class="plan-per">/month</span></p>
             <ul>
                 <li>Everything in Free</li>
                 <li><strong>Unlimited</strong> watchlist</li>
@@ -89,13 +90,12 @@ include 'includes/header.php';
 
                 <!-- ── SIMULATED CHECKOUT ── -->
                 <form method="post" action="actions/process_upgrade.php" class="checkout-form">
-
                     <label for="duration">Duration</label>
-                    <select name="duration" id="duration">
-                        <?php foreach ($plans as $months => $p): ?>
-                            <option value="<?= $months ?>">
-                                <?= $p['label'] ?> — $<?= number_format($p['price'], 2) ?>
-                                ($<?= number_format($p['per'], 2) ?>/mo)
+                    <select name="plan_id" id="duration">
+                        <?php foreach ($plans as $p): ?>
+                            <option value="<?= (int) $p['id'] ?>">
+                                <?= htmlspecialchars($p['label']) ?> — $<?= number_format((float) $p['price'], 2) ?>
+                                ($<?= number_format((float) $p['price'] / (int) $p['months'], 2) ?>/mo)
                             </option>
                         <?php endforeach; ?>
                     </select>

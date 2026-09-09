@@ -1,6 +1,5 @@
 <?php
-// admin.php — admin dashboard: stats, user management (subscriptions),
-// movie management (search + delete). No admin-granting UI (SQL only).
+// admin.php — stats, user subscriptions, PLANS (services), movie add/manage (products)
 
 require_once 'includes/auth.php';
 requireAdmin();
@@ -19,8 +18,7 @@ require_once 'database/db.php';
  $statWatchlist = (int) $pdo->query('SELECT COUNT(*) FROM watch_list')->fetchColumn();
  $statHistory   = (int) $pdo->query('SELECT COUNT(*) FROM watch_history')->fetchColumn();
 
-// Users + watchlist counts + subscription expir
-// tier_expires_at in BOTH the SELECT and the GROUP BY (ONLY_FULL_GROUP_BY rule)
+// Users
  $users = $pdo->query(
     'SELECT u.id, u.name, u.email, u.tier, u.is_admin, u.tier_expires_at, u.created_at,
             COUNT(wl.id) AS watchlist_count
@@ -30,15 +28,17 @@ require_once 'database/db.php';
      ORDER BY u.created_at DESC'
 )->fetchAll(PDO::FETCH_ASSOC);
 
-// Movie lookup (search + delete)
+// Plans (services offered)
+ $plans = $pdo->query('SELECT id, label, months, price FROM plans
+                      WHERE is_active = 1 ORDER BY months')->fetchAll(PDO::FETCH_ASSOC);
+
+// Movie search + results
  $movieTerm    = trim($_GET['movie_search'] ?? '');
  $movieResults = [];
 if ($movieTerm !== '') {
     $stmt = $pdo->prepare('SELECT id, title, release_date, is_premium
-                           FROM movies
-                           WHERE title LIKE :term
-                           ORDER BY release_date DESC
-                           LIMIT 10');
+                           FROM movies WHERE title LIKE :term
+                           ORDER BY release_date DESC LIMIT 10');
     $stmt->bindValue(':term', '%' . $movieTerm . '%');
     $stmt->execute();
     $movieResults = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -52,16 +52,20 @@ include 'includes/header.php';
 
     <h1>Admin</h1>
 
-    <?php if ($status === 'sub'): ?>
+    <?php if ($status === 'movie-added'): ?>
+        <p class="message message-success">Movie added: <?= htmlspecialchars($_GET['title'] ?? '') ?></p>
+    <?php elseif ($status === 'plan-added'): ?>
+        <p class="message message-success">New plan created it's live on the Pricing page.</p>
+    <?php elseif ($status === 'plan-deleted'): ?>
+        <p class="message message-success">Plan removed.</p>
+    <?php elseif ($status === 'premium'): ?>
+        <p class="message message-success">Movie tier updated.</p>
+    <?php elseif ($status === 'sub'): ?>
         <p class="message message-success">Subscription updated.</p>
     <?php elseif ($status === 'user-deleted'): ?>
-        <p class="message message-success">User deleted — <?= (int) ($_GET['wl'] ?? 0) ?>
-            watchlist entries removed automatically (ON DELETE CASCADE).</p>
+        <p class="message message-success">User deleted <?= (int) ($_GET['wl'] ?? 0) ?></p>
     <?php elseif ($status === 'movie-deleted'): ?>
-        <p class="message message-success">Movie deleted — <?= (int) ($_GET['wl'] ?? 0) ?>
-            watchlist entries removed automatically (ON DELETE CASCADE).</p>
-    <?php elseif ($status === 'admin'): ?>
-        <p class="message message-success">Admin privileges updated.</p>
+        <p class="message message-success">Movie deleted <?= (int) ($_GET['wl'] ?? 0) ?></p>
     <?php elseif ($status === 'error'): ?>
         <p class="message message-error"><?= htmlspecialchars($message) ?></p>
     <?php endif; ?>
@@ -74,10 +78,10 @@ include 'includes/header.php';
         <div class="stat-card"><p class="stat-value"><?= $statMovies ?></p><p class="stat-label">Movies</p></div>
         <div class="stat-card"><p class="stat-value"><?= $statTrailers ?></p><p class="stat-label">With trailers</p></div>
         <div class="stat-card"><p class="stat-value"><?= $statWatchlist ?></p><p class="stat-label">Watchlist rows</p></div>
-        <div class="stat-card"><p class="stat-value"><?= $statHistory ?></p><p class="stat-label">Watch history rows</p></div>
+        <div class="stat-card"><p class="stat-value"><?= $statHistory ?></p><p class="stat-label">History rows</p></div>
     </div>
 
-    <!-- USERS TABLE — subscriptions live HERE -->
+    <!-- USERS -->
     <h2>Users</h2>
     <table class="admin-table">
         <tr>
@@ -98,7 +102,6 @@ include 'includes/header.php';
                 <td><?= (int) $u['watchlist_count'] ?></td>
                 <td><?= date('M j, Y', strtotime($u['created_at'])) ?></td>
                 <td>
-                    <!-- ── SUBSCRIPTION MANAGER: on USER rows ── -->
                     <form method="post" action="actions/admin_update_user.php" class="admin-sub-form">
                         <input type="hidden" name="user_id" value="<?= (int) $u['id'] ?>">
                         <select name="months">
@@ -123,12 +126,50 @@ include 'includes/header.php';
         <?php endforeach; ?>
     </table>
 
-    <!-- MOVIES TABLE — search + delete ONLY (no subscription forms here!) -->
-    <h2>Movies</h2>
+    <!-- SERVICES: subscription plans -->
+    <h2>Subscription Plans</h2>
+    <table class="admin-table">
+        <tr><th>Plan</th><th>Duration</th><th>Price</th><th>Per month</th><th>Action</th></tr>
+        <?php foreach ($plans as $p): ?>
+            <tr>
+                <td><?= htmlspecialchars($p['label']) ?></td>
+                <td><?= (int) $p['months'] ?> months</td>
+                <td>$<?= number_format((float) $p['price'], 2) ?></td>
+                <td>$<?= number_format((float) $p['price'] / (int) $p['months'], 2) ?></td>
+                <td>
+                    <form method="post" action="actions/admin_manage_plans.php"
+                          onsubmit="return confirm('Remove this plan from the Pricing page?');">
+                        <input type="hidden" name="plan_id" value="<?= (int) $p['id'] ?>">
+                        <button name="delete-plan" type="submit" class="admin-danger">Remove</button>
+                    </form>
+                </td>
+            </tr>
+        <?php endforeach; ?>
+    </table>
+
+    <form method="post" action="actions/admin_manage_plans.php" class="admin-plan-form">
+        <input type="text" name="label" placeholder="Plan name (e.g. Lifetime)" required>
+        <input type="number" name="months" placeholder="Months" min="1" max="120" required>
+        <input type="number" name="price" placeholder="Price" min="0.01" step="0.01" required>
+        <button name="add-plan" type="submit">+ Add Plan</button>
+    </form>
+
+    <!-- PRODUCTS: movies - add + manage -->
+    <h2>Add a Movie</h2>
+    <form method="post" action="actions/admin_add_movie.php" class="admin-plan-form">
+        <input type="number" name="tmdb_id" placeholder="TMDB ID (from themoviedb.org/movie/…)" required>
+        <label class="admin-check">
+            <input type="checkbox" name="make_premium" value="1"> ★ Premium title
+        </label>
+        <button name="add-movie" type="submit">Import Movie</button>
+    </form>
+    <p class="admin-muted">Imports title, poster, backdrop, overview, rating, genres and trailer automatically from TMDB.</p>
+
+    <h2>Manage Movies</h2>
     <form method="get" action="admin.php" class="admin-movie-search">
         <input type="text" name="movie_search"
                value="<?= htmlspecialchars($movieTerm) ?>"
-               placeholder="Find a movie to delete…">
+               placeholder="Find a movie…">
         <button type="submit">Find</button>
     </form>
 
@@ -136,15 +177,24 @@ include 'includes/header.php';
         <p>No movies match "<?= htmlspecialchars($movieTerm) ?>".</p>
     <?php elseif (!empty($movieResults)): ?>
         <table class="admin-table">
-            <tr><th>Title</th><th>Released</th><th>Tier</th><th>Action</th></tr>
+            <tr><th>Title</th><th>Released</th><th>Tier</th><th>Actions</th></tr>
             <?php foreach ($movieResults as $m): ?>
                 <tr>
                     <td><?= htmlspecialchars($m['title']) ?></td>
                     <td><?= $m['release_date'] ? date('Y', strtotime($m['release_date'])) : 'TBA' ?></td>
                     <td><?= $m['is_premium'] ? '★ Premium' : 'Free' ?></td>
                     <td>
+                        <!-- premium toggle carries the search term (return-to-sender, GET edition) -->
+                        <form method="post" action="actions/admin_toggle_premium.php">
+                            <input type="hidden" name="movie_id" value="<?= (int) $m['id'] ?>">
+                            <input type="hidden" name="movie_search" value="<?= htmlspecialchars($movieTerm) ?>">
+                            <button name="toggle-premium" type="submit">
+                                <?= $m['is_premium'] ? 'Make Free' : 'Make Premium' ?>
+                            </button>
+                        </form>
+
                         <form method="post" action="actions/admin_delete_movie.php"
-                              onsubmit="return confirm('Delete this movie? All watchlist entries pointing at it are removed too.');">
+                              onsubmit="return confirm('Delete this movie? All references are removed too.');">
                             <input type="hidden" name="movie_id" value="<?= (int) $m['id'] ?>">
                             <button name="delete-movie" type="submit" class="admin-danger">Delete</button>
                         </form>
