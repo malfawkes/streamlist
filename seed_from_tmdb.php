@@ -12,7 +12,7 @@ function tmdbFetch(string $url): ?array
     return $json === false ? null : json_decode($json, true);
 }
 
-// 🆕 1. Genre dictionary — once, ~19 rows (Action, Comedy, Horror…)
+// 1. Genre dictionary — once, ~19 rows (Action, Comedy, Horror…)
  $genresData = tmdbFetch('https://api.themoviedb.org/3/genre/movie/list?api_key=' . TMDB_API_KEY);
  $stmtGenre = $pdo->prepare('INSERT IGNORE INTO genres (id, name) VALUES (:id, :name)');
 foreach ($genresData['genres'] ?? [] as $g) {
@@ -53,7 +53,7 @@ foreach ($genreSlices as [$filter, $pages]) {
         (:tmdb_id, :title, :poster_path, :release_date, :is_premium, :overview, :rating, :backdrop_path)'
 );
  $stmtTrailer = $pdo->prepare('UPDATE movies SET trailer_key = :key WHERE tmdb_id = :tmdb_id');
-// 🆕 2. The genre junction writer
+// 2. The genre junction writer
  $stmtMovieGenre = $pdo->prepare(
     'INSERT IGNORE INTO movie_genres (movie_id, genre_id) VALUES (:movie_id, :genre_id)'
 );
@@ -74,7 +74,7 @@ foreach ($sources as $url) {
         $stmt->bindValue(':release_date',  $movie['release_date'] ?: null);
         $stmt->bindValue(':is_premium',    ($index % 5 === 0) ? 1 : 0, PDO::PARAM_INT);
         $stmt->bindValue(':overview',      $movie['overview'] ?: null);
-        // 🆕 3. 0.0 means "no votes yet" → store null (?: turns 0 into null)
+        // 3. 0.0 means "no votes yet" → store null (?: turns 0 into null)
         $stmt->bindValue(':rating',        $movie['vote_average'] ?: null);
         $stmt->bindValue(':backdrop_path', $movie['backdrop_path'] ?: null);
         $stmt->execute();
@@ -82,11 +82,11 @@ foreach ($sources as $url) {
         if ($stmt->rowCount() === 1) {
             $inserted++;
 
-            // 🆕 4. our internal id — lastInsertId(), the registration trick!
+            // 4. our internal id — lastInsertId(), the registration trick!
             // (movie_genres references movies.id, NOT tmdb_id)
             $ourId = (int) $pdo->lastInsertId();
 
-            // 🆕 5. link this movie to each of its genres
+            // 5. link this movie to each of its genres
             foreach ($movie['genre_ids'] ?? [] as $gid) {
                 $stmtMovieGenre->bindValue(':movie_id', $ourId, PDO::PARAM_INT);
                 $stmtMovieGenre->bindValue(':genre_id', $gid, PDO::PARAM_INT);

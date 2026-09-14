@@ -7,7 +7,7 @@ requireLogin();
 require_once 'database/db.php';
 
 // All genres + their movie counts (same GROUP BY as the chips)
- $genres = $pdo->query(
+$genres = $pdo->query(
     'SELECT g.id, g.name, COUNT(mg.movie_id) AS movie_count
      FROM genres g
      INNER JOIN movie_genres mg ON mg.genre_id = g.id
@@ -16,8 +16,8 @@ require_once 'database/db.php';
 )->fetchAll(PDO::FETCH_ASSOC);
 
 // Per genre: its 4 highest-rated movies (posters make the cards visual).
- $samples = [];
- $stmtSamples = $pdo->prepare(
+$samples = [];
+$stmtSamples = $pdo->prepare(
     'SELECT m.id, m.title, m.poster_path
      FROM movies m
      INNER JOIN movie_genres mg ON mg.movie_id = m.id

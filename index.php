@@ -162,7 +162,7 @@ include 'includes/header.php';
             <div class="card third">
                 <img src="assets/img/play.png" alt="Play icon">
                 <p class="card-heading">Build Your Watchlist</p>
-                <p class="card-description">The more you favorite, the sharper your recommnedations get, genuinely, not just in theory.</p>
+                <p class="card-description">The more you favorite, the sharper your recommendations get, genuinely, not just in theory.</p>
             </div>
         </div>
 

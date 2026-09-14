@@ -1692,3 +1692,100 @@ h2 {
   gap: 6px;
   font-size: var(--fs-small);
 }
+
+/*ADMIN MESSAGES*/
+/* Contact form + inbox */
+.contact-wrap, .contact-card {
+  max-width: 720px;
+}
+
+.hp-field {
+  position: absolute;
+  left: -9999px;
+}
+
+.contact-form input, .contact-form textarea {
+  width: 100%;
+  padding: 10px 14px;
+  margin: 6px 0 var(--space-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+}
+
+.contact-form button {
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 12px 24px;
+  font-weight: var(--fw-bold);
+  cursor: pointer;
+}
+
+.contact-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.contact-unread {
+  border-left: 4px solid #b8860b;
+}
+
+/* unread = gold edge */
+.contact-head {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.unread-dot {
+  color: #b8860b;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-bold);
+}
+
+.contact-subject {
+  font-weight: var(--fw-bold);
+  margin-top: var(--space-xs);
+}
+
+.contact-body {
+  margin-top: var(--space-xs);
+  line-height: 1.6;
+}
+
+.contact-actions {
+  display: flex;
+  gap: var(--space-xs);
+  margin-top: var(--space-sm);
+}
+
+.contact-actions button {
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 6px 14px;
+  font-size: var(--fs-small);
+  font-weight: var(--fw-bold);
+  cursor: pointer;
+}
+
+.contact-wrap {
+  margin: var(--space-xl) 0;
+  margin-inline: auto;
+}
+
+.message-wrap {
+  margin-bottom: var(--space-md);
+  margin-top: var(--space-md);
+}
+
+.admin-wrap {
+  margin: var(--space-md) auto;
+}

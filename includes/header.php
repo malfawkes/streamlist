@@ -71,6 +71,7 @@ require_once __DIR__ . '/auth.php';
                         </div>
                         <?php if (isAdmin()): ?>
                             <a href="admin.php" class="profile-dropdown-item">⚙ Admin Panel</a>
+                            <a href="admin_messages.php" class="profile-dropdown-item">📥 Messages</a>
                         <?php endif; ?>
                         <a href="profile.php" class="profile-dropdown-item">Profile</a>
                         <a href="watchlist.php" class="profile-dropdown-item">My Watchlist</a>

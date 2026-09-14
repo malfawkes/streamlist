@@ -1,7 +1,6 @@
 <?php
 // actions/admin_add_movie.php — add a product: import a movie from TMDB by ID.
-// One field in, real data out: title, poster, backdrop, overview, rating,
-// genres, even the trailer — fetched from the detail + videos endpoints.
+// Populates ALL related tables: movies, movie_genres, trailer, movie_credits.
 
 require_once __DIR__ . '/../includes/auth.php';
 requireAdmin();
@@ -13,14 +12,14 @@ if (!isset($_POST['add-movie'])) {
     exit;
 }
 
- $tmdbId = filter_var($_POST['tmdb_id'] ?? '', FILTER_VALIDATE_INT);
+$tmdbId = filter_var($_POST['tmdb_id'] ?? '', FILTER_VALIDATE_INT);
 if ($tmdbId === false || $tmdbId < 1) {
     header('Location: ../admin.php?status=error&message=' . urlencode('Enter a valid TMDB ID.'));
     exit;
 }
  $isPremium = isset($_POST['make_premium']) ? 1 : 0;
 
-// ── Fetch the movie's details (the /movie/{id} endpoint) ──────────
+// Fetch the movie's details
  $raw = @file_get_contents('https://api.themoviedb.org/3/movie/'
                         . $tmdbId . '?api_key=' . TMDB_API_KEY);
 if ($raw === false) {
@@ -30,15 +29,13 @@ if ($raw === false) {
 }
  $data = json_decode($raw, true);
 if (!isset($data['id'])) {
-    // unknown ID → TMDB's error body has no 'id' key
     header('Location: ../admin.php?status=error&message='
          . urlencode('TMDB has no movie with that ID.'));
     exit;
 }
 
 try {
-    // Plain INSERT (no IGNORE) — a duplicate tmdb_id throws 1062,
-    // and we WANT the catch to translate it (the duplicate-email pattern)
+    // Plain INSERT — duplicate tmdb_id throws 1062 → friendly catch
     $stmt = $pdo->prepare(
         'INSERT INTO movies
             (tmdb_id, title, poster_path, release_date, is_premium, overview, rating, backdrop_path)
@@ -51,13 +48,13 @@ try {
     $stmt->bindValue(':date',    $data['release_date'] ?: null);
     $stmt->bindValue(':premium', $isPremium, PDO::PARAM_INT);
     $stmt->bindValue(':overview', $data['overview'] ?: null);
-    $stmt->bindValue(':rating',   $data['vote_average'] ?: null);   // 0 → null, the lesson
+    $stmt->bindValue(':rating',   $data['vote_average'] ?: null);
     $stmt->bindValue(':backdrop', $data['backdrop_path'] ?: null);
     $stmt->execute();
 
-    $ourId = (int) $pdo->lastInsertId();   // bridge TMDB id → our internal id
+    $ourId = (int) $pdo->lastInsertId();   // bridge: TMDB id → our internal id
 
-    // ── Genres: the detail endpoint sends full objects [{id, name}] ──
+    // Genres (detail endpoint sends full objects)
     $stmtG  = $pdo->prepare('INSERT IGNORE INTO genres (id, name) VALUES (:id, :name)');
     $stmtMG = $pdo->prepare('INSERT IGNORE INTO movie_genres (movie_id, genre_id)
                              VALUES (:m, :g)');
@@ -71,7 +68,7 @@ try {
         $stmtMG->execute();
     }
 
-    // ── Trailer: one more fetch, the seed's extraction logic, compact ──
+    // Trailer
     $videos = json_decode(@file_get_contents(
         'https://api.themoviedb.org/3/movie/' . $tmdbId . '/videos?api_key=' . TMDB_API_KEY
     ), true);
@@ -86,8 +83,51 @@ try {
         $stmtT->execute();
     }
 
+    // Credits: cast + director + screenplay
+    // Same extraction as fill_credits, pointed at OUR new row.
+    $credits = json_decode(@file_get_contents(
+        'https://api.themoviedb.org/3/movie/' . $tmdbId . '/credits?api_key=' . TMDB_API_KEY
+    ), true);
+
+    $stmtC = $pdo->prepare(
+        'INSERT IGNORE INTO movie_credits
+            (movie_id, person_id, name, job, character_name, profile_path, credit_order)
+         VALUES
+            (:movie_id, :person_id, :name, :job, :character, :profile, :ord)'
+    );
+
+    $creditsAdded = 0;
+
+    // Top 8 billed cast
+    foreach (array_slice($credits['cast'] ?? [], 0, 8) as $i => $c) {
+        $stmtC->bindValue(':movie_id', $ourId, PDO::PARAM_INT);
+        $stmtC->bindValue(':person_id', $c['id'], PDO::PARAM_INT);
+        $stmtC->bindValue(':name', $c['name']);
+        $stmtC->bindValue(':job', 'Cast');
+        $stmtC->bindValue(':character', $c['character'] ?: null);
+        $stmtC->bindValue(':profile', $c['profile_path'] ?: null);
+        $stmtC->bindValue(':ord', $i, PDO::PARAM_INT);
+        $stmtC->execute();
+        $creditsAdded += $stmtC->rowCount();
+    }
+
+    // Director + Screenplay from crew
+    foreach ($credits['crew'] ?? [] as $c) {
+        if ($c['job'] === 'Director' || $c['job'] === 'Screenplay') {
+            $stmtC->bindValue(':movie_id', $ourId, PDO::PARAM_INT);
+            $stmtC->bindValue(':person_id', $c['id'], PDO::PARAM_INT);
+            $stmtC->bindValue(':name', $c['name']);
+            $stmtC->bindValue(':job', $c['job']);
+            $stmtC->bindValue(':character', null);
+            $stmtC->bindValue(':profile', $c['profile_path'] ?: null);
+            $stmtC->bindValue(':ord', 0, PDO::PARAM_INT);
+            $stmtC->execute();
+            $creditsAdded += $stmtC->rowCount();
+        }
+    }
+
     header('Location: ../admin.php?status=movie-added&title='
-         . urlencode($data['title']));
+         . urlencode($data['title']) . '&credits=' . $creditsAdded);
     exit;
 
 } catch (PDOException $e) {

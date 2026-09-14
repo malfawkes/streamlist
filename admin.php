@@ -6,35 +6,35 @@ requireAdmin();
 
 require_once 'database/db.php';
 
- $status  = $_GET['status']  ?? null;
- $message = $_GET['message'] ?? null;
+$status  = $_GET['status']  ?? null;
+$message = $_GET['message'] ?? null;
 
 // Stats
- $statUsers     = (int) $pdo->query('SELECT COUNT(*) FROM users')->fetchColumn();
- $statPremium   = (int) $pdo->query("SELECT COUNT(*) FROM users WHERE tier = 'premium'")->fetchColumn();
- $statAdmins    = (int) $pdo->query('SELECT COUNT(*) FROM users WHERE is_admin = 1')->fetchColumn();
- $statMovies    = (int) $pdo->query('SELECT COUNT(*) FROM movies')->fetchColumn();
- $statTrailers  = (int) $pdo->query('SELECT COUNT(*) FROM movies WHERE trailer_key IS NOT NULL')->fetchColumn();
- $statWatchlist = (int) $pdo->query('SELECT COUNT(*) FROM watch_list')->fetchColumn();
- $statHistory   = (int) $pdo->query('SELECT COUNT(*) FROM watch_history')->fetchColumn();
+$statUsers     = (int) $pdo->query('SELECT COUNT(*) FROM users')->fetchColumn();
+$statPremium   = (int) $pdo->query("SELECT COUNT(*) FROM users WHERE tier = 'premium'")->fetchColumn();
+$statAdmins    = (int) $pdo->query('SELECT COUNT(*) FROM users WHERE is_admin = 1')->fetchColumn();
+$statMovies    = (int) $pdo->query('SELECT COUNT(*) FROM movies')->fetchColumn();
+$statTrailers  = (int) $pdo->query('SELECT COUNT(*) FROM movies WHERE trailer_key IS NOT NULL')->fetchColumn();
+$statWatchlist = (int) $pdo->query('SELECT COUNT(*) FROM watch_list')->fetchColumn();
+$statHistory   = (int) $pdo->query('SELECT COUNT(*) FROM watch_history')->fetchColumn();
 
 // Users
- $users = $pdo->query(
-    'SELECT u.id, u.name, u.email, u.tier, u.is_admin, u.tier_expires_at, u.created_at,
-            COUNT(wl.id) AS watchlist_count
-     FROM users u
-     LEFT JOIN watch_list wl ON wl.user_id = u.id
-     GROUP BY u.id, u.name, u.email, u.tier, u.is_admin, u.tier_expires_at, u.created_at
-     ORDER BY u.created_at DESC'
+$users = $pdo->query(
+'SELECT u.id, u.name, u.email, u.tier, u.is_admin, u.tier_expires_at, u.created_at,
+        COUNT(wl.id) AS watchlist_count
+    FROM users u
+    LEFT JOIN watch_list wl ON wl.user_id = u.id
+    GROUP BY u.id, u.name, u.email, u.tier, u.is_admin, u.tier_expires_at, u.created_at
+    ORDER BY u.created_at DESC'
 )->fetchAll(PDO::FETCH_ASSOC);
 
 // Plans (services offered)
- $plans = $pdo->query('SELECT id, label, months, price FROM plans
-                      WHERE is_active = 1 ORDER BY months')->fetchAll(PDO::FETCH_ASSOC);
+$plans = $pdo->query('SELECT id, label, months, price FROM plans
+                    WHERE is_active = 1 ORDER BY months')->fetchAll(PDO::FETCH_ASSOC);
 
 // Movie search + results
- $movieTerm    = trim($_GET['movie_search'] ?? '');
- $movieResults = [];
+$movieTerm    = trim($_GET['movie_search'] ?? '');
+$movieResults = [];
 if ($movieTerm !== '') {
     $stmt = $pdo->prepare('SELECT id, title, release_date, is_premium
                            FROM movies WHERE title LIKE :term
@@ -48,7 +48,7 @@ include 'includes/header.php';
 ?>
 
 <main>
-<div class="wrap">
+<div class="wrap admin-wrap">
 
     <h1>Admin</h1>
 
