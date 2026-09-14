@@ -3,6 +3,7 @@ require_once 'database/db.php';
 
 // Count total movies
 $movieCount = $pdo->query('SELECT COUNT(*) FROM movies')->fetchColumn();
+$genreCount = $pdo->query('SELECT COUNT(*) FROM genres')->fetchColumn();
 
 // HERO: the highest-rated movie that has a backdrop image
 // (no user input → query() shortcut, same as movies.php)
@@ -45,7 +46,7 @@ include 'includes/header.php';
                     <p class="hero-stat-label">Movies Indexed</p>
                 </div>
                 <div>
-                    <p class="hero-stat">48</p>
+                    <p class="hero-stat"><?= $genreCount; ?></p>
                     <p class="hero-stat-label">Genres & Moods</p>
                 </div>
                 <div>

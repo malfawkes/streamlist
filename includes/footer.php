@@ -23,15 +23,15 @@
                 <div class="footer-links-column">
                     <h4>LEGAL</h4>
                     <ul>
-                        <li><a href="privacy.php">Privacy Policy</a></li>
-                        <li><a href="terms.php">Terms of Service</a></li>
+                        <li><a href="#privacy">Privacy Policy</a></li>
+                        <li><a href="#terms">Terms of Service</a></li>
                     </ul>
                 </div>
                 <div class="footer-links-column">
                     <h4>SUPPORT</h4>
                     <ul>
                         <li><a href="contact.php">Contact Us</a></li>
-                        <li><a href="#about">About</a></li>
+                        <li><a href="about.php">About</a></li>
                     </ul>
                 </div>
             </div>
@@ -41,9 +41,9 @@
         <div class="footer-bottom">
             <p>&copy; 2026 StreamList. All rights reserved.</p>
             <div class="footer-social">
-                <a href="#"><img src="assets/logo/facebook.png" alt="Facebook"></a>
-                <a href="#"><img src="assets/logo/twitter.png" alt="Twitter"></a>
-                <a href="#"><img src="assets/logo/instagram.png" alt="Instagram"></a>
+                <a href="https://facebook.com"><img src="assets/logo/facebook.png" alt="Facebook"></a>
+                <a href="https://x.com"><img src="assets/logo/twitter.png" alt="Twitter"></a>
+                <a href="https://instagram.com"><img src="assets/logo/instagram.png" alt="Instagram"></a>
             </div>
         </div>
     </div>

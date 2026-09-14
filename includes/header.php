@@ -30,7 +30,7 @@ require_once __DIR__ . '/auth.php';
             <a href="movies.php">Trending</a>
             <a href="genres.php">Genres</a>
             <a href="upgrade.php">Pricing</a>
-            <a href="index.php#about">About</a>
+            <a href="about.php">About</a>
         </nav>
 
         <?php if (isLoggedIn()): ?>
