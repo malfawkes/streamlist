@@ -1,5 +1,6 @@
 <?php
-// actions/process_upgrade.php — simulated checkout + subscription durations
+// actions/process_upgrade.php — checkout creates a PENDING REQUEST
+// (admin verifies and activates). Downgrade unchanged.
 
 require_once __DIR__ . '/../includes/auth.php';
 
@@ -16,16 +17,26 @@ if (!isset($_POST['checkout']) && !isset($_POST['downgrade'])) {
     exit;
 }
 
- $userId = currentUserId();
+$userId = currentUserId();
 
-//  CANCEL / DOWNGRADE 
+// ── CANCEL / DOWNGRADE (unchanged) ───────────────────────────────
 if (isset($_POST['downgrade'])) {
     try {
+        // New detail: cancelling also voids any pending request —
+        // you can't cancel your sub and still have one in the queue.
+        // Conditional UPDATE (WHERE status='pending') = only touches live requests.
+        $stmt = $pdo->prepare("UPDATE subscription_requests
+                               SET status = 'rejected', decided_at = NOW(),
+                                   admin_note = 'Cancelled by user'
+                               WHERE user_id = :id AND status = 'pending'");
+        $stmt->bindValue(':id', $userId, PDO::PARAM_INT);
+        $stmt->execute();
+
         $stmt = $pdo->prepare("UPDATE users SET tier = 'free', tier_expires_at = NULL
                                WHERE id = :id");
         $stmt->bindValue(':id', $userId, PDO::PARAM_INT);
         $stmt->execute();
-        $_SESSION['user_tier'] = 'free';        // cache sync
+        $_SESSION['user_tier'] = 'free';
 
         header('Location: ../upgrade.php?status=downgraded');
         exit;
@@ -37,10 +48,11 @@ if (isset($_POST['downgrade'])) {
     }
 }
 
-//  CHECKOUT 
-$planId = filter_var($_POST['plan_id'] ?? '', FILTER_VALIDATE_INT);
+// ── CHECKOUT → pending request ───────────────────────────────────
+ $planId = filter_var($_POST['plan_id'] ?? '', FILTER_VALIDATE_INT);
 if ($planId === false) {
-    header('Location: ../upgrade.php?status=error&message=' . urlencode('Choose a plan.'));
+    header('Location: ../upgrade.php?status=error&message='
+         . urlencode('Choose a plan.'));
     exit;
 }
  $stmt = $pdo->prepare('SELECT months, price, label FROM plans
@@ -49,17 +61,17 @@ if ($planId === false) {
  $stmt->execute();
  $plan = $stmt->fetch(PDO::FETCH_ASSOC);
 if (!$plan) {
-    header('Location: ../upgrade.php?status=error&message=' . urlencode('Choose a plan.'));
+    header('Location: ../upgrade.php?status=error&message='
+         . urlencode('Choose a plan.'));
     exit;
 }
-$months = (int) $plan['months'];
 
-// Validate every card field — same validator discipline as registration
-$errors = [];
-$cardName   = trim($_POST['full_name']  ?? '');
-$cardNumber = $_POST['card_number'] ?? '';
-$cardExpiry = trim($_POST['card_expiry'] ?? '');
-$cardCvv    = trim($_POST['card_cvv']    ?? '');
+// Card validation — UNCHANGED: the "payment" is still validated…
+ $errors = [];
+ $cardName   = trim($_POST['full_name']  ?? '');
+ $cardNumber = $_POST['card_number'] ?? '';
+ $cardExpiry = trim($_POST['card_expiry'] ?? '');
+ $cardCvv    = trim($_POST['card_cvv']    ?? '');
 
 if ($e = validateRequired($cardName, 'Name on card')) { $errors[] = $e; }
 if ($e = validateCardNumber($cardNumber))             { $errors[] = $e; }
@@ -72,37 +84,33 @@ if (!empty($errors)) {
     exit;
 }
 
-// No storage, no logging, no session. Only tier + expiry ever persist.
+// …and still DISCARDED — validated, used, destroyed, never stored.
 unset($cardName, $cardNumber, $cardExpiry, $cardCvv);
 
 try {
-    $today = date('Y-m-d');
-    $stmt = $pdo->prepare('SELECT tier, tier_expires_at FROM users WHERE id = :id');
-    $stmt->bindValue(':id', $userId, PDO::PARAM_INT);
+    // One pending request per user — no queue spam
+    $check = $pdo->prepare("SELECT id FROM subscription_requests
+                            WHERE user_id = :id AND status = 'pending'");
+    $check->bindValue(':id', $userId, PDO::PARAM_INT);
+    $check->execute();
+    if ($check->fetchColumn()) {
+        header('Location: ../upgrade.php?status=error&message='
+             . urlencode('You already have a request pending review.'));
+        exit;
+    }
+
+    $stmt = $pdo->prepare('INSERT INTO subscription_requests (user_id, plan_id)
+                           VALUES (:u, :p)');
+    $stmt->bindValue(':u', $userId, PDO::PARAM_INT);
+    $stmt->bindValue(':p', $planId, PDO::PARAM_INT);
     $stmt->execute();
-    $me = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    $base = ($me['tier'] === 'premium'
-             && $me['tier_expires_at'] !== null
-             && $me['tier_expires_at'] > $today)
-        ? $me['tier_expires_at']        // still active → stack from the end
-        : $today;                       // not active → start now
-
-    $expiry = date('Y-m-d', strtotime($base . ' +' . $months . ' months'));
-
-    $stmt = $pdo->prepare("UPDATE users SET tier = 'premium', tier_expires_at = :e
-                           WHERE id = :id");
-    $stmt->bindValue(':e', $expiry);
-    $stmt->bindValue(':id', $userId, PDO::PARAM_INT);
-    $stmt->execute();
-    $_SESSION['user_tier'] = 'premium'; // cache sync
-
-    header('Location: ../upgrade.php?status=upgraded');
+    header('Location: ../upgrade.php?status=submitted');
     exit;
 
 } catch (PDOException $e) {
-    error_log('Checkout error: ' . $e->getMessage());
+    error_log('Checkout request error: ' . $e->getMessage());
     header('Location: ../upgrade.php?status=error&message='
-         . urlencode('Payment could not be processed. Please try again.'));
+         . urlencode('Could not submit your request. Please try again.'));
     exit;
 }

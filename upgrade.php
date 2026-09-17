@@ -1,27 +1,37 @@
 <?php
-// upgrade.php — StreamList Plus: DB-driven plans, simulated checkout, manage/downgrade
+// upgrade.php — plans, checkout (→ pending request), status banner, manage/downgrade
 
 require_once 'includes/auth.php';
 requireLogin();
 
 require_once 'database/db.php';
 
-// ── Plans are DATA now — the admin manages offerings without touching code.
-// (This replaces the old hardcoded $plans array.)
  $plans = $pdo->query('SELECT id, label, months, price FROM plans
                       WHERE is_active = 1 ORDER BY months')->fetchAll(PDO::FETCH_ASSOC);
 
-// Fresh plan status from the DB (never trust the session cache for display)
  $stmt = $pdo->prepare('SELECT tier, tier_expires_at FROM users WHERE id = :id');
  $stmt->bindValue(':id', currentUserId(), PDO::PARAM_INT);
  $stmt->execute();
  $me = $stmt->fetch(PDO::FETCH_ASSOC);
  $isPremium = ($me['tier'] === 'premium');
 
+// ── The user's LATEST request — drives the banner + form visibility ──
+ $stmt = $pdo->prepare('SELECT sr.status, sr.admin_note, p.label
+                       FROM subscription_requests sr
+                       INNER JOIN plans p ON p.id = sr.plan_id
+                       WHERE sr.user_id = :uid
+                       ORDER BY sr.requested_at DESC
+                       LIMIT 1');
+ $stmt->bindValue(':uid', currentUserId(), PDO::PARAM_INT);
+ $stmt->execute();
+ $lastRequest = $stmt->fetch(PDO::FETCH_ASSOC);
+
+ $hasPending = ($lastRequest && $lastRequest['status'] === 'pending');
+
  $status  = $_GET['status']  ?? null;
  $message = $_GET['message'] ?? null;
 
-// Paywall redirect support (?status=blocked&movie=ID)
+// Paywall redirect support
  $blockedTitle = null;
 if ($status === 'blocked') {
     $movieId = filter_var($_GET['movie'] ?? '', FILTER_VALIDATE_INT);
@@ -41,8 +51,8 @@ include 'includes/header.php';
 
     <h1 class="streamlist-plus-h1">StreamList Plus</h1>
 
-    <?php if ($status === 'upgraded'): ?>
-        <p class="message message-success">Payment successful you're a Plus member!</p>
+    <?php if ($status === 'submitted'): ?>
+        <p class="message message-success">Request submitted. Awaiting verification.</p>
     <?php elseif ($status === 'downgraded'): ?>
         <p class="message message-success">You're back on the Free plan.</p>
     <?php elseif ($status === 'error'): ?>
@@ -54,7 +64,15 @@ include 'includes/header.php';
 
     <?php if ($isPremium): ?>
         <p class="plan-status">★ Current plan: <strong>Premium</strong>
-        active until <?= htmlspecialchars($me['tier_expires_at'] ?? '—') ?></p>
+        — active until <?= htmlspecialchars($me['tier_expires_at'] ?? '—') ?></p>
+    <?php elseif ($hasPending): ?>
+        <p class="plan-status"><?= htmlspecialchars($lastRequest['label']) ?>
+        . Payment received, pending admin verification. You'll be upgraded once approved.</p>
+    <?php elseif ($lastRequest && $lastRequest['status'] === 'rejected'): ?>
+        <p class="message message-error">Your <?= htmlspecialchars($lastRequest['label']) ?>
+        request was rejected.<?= $lastRequest['admin_note']
+            ? ' Reason: ' . htmlspecialchars($lastRequest['admin_note']) : '' ?>
+          You can try again below.</p>
     <?php endif; ?>
 
     <div class="plan-grid">
@@ -70,7 +88,7 @@ include 'includes/header.php';
         </div>
 
         <div class="plan-card plan-highlight">
-            <h2 class="streamlist-plus-h1">StreamList Plus</h2>
+            <h2>StreamList Plus</h2>
             <p class="plan-price">from $<?= $plans
                 ? number_format((float) $plans[0]['price'] / (int) $plans[0]['months'], 2)
                 : '0.00' ?><span class="plan-per">/month</span></p>
@@ -86,10 +104,12 @@ include 'includes/header.php';
                       onsubmit="return confirm('Cancel your subscription?');">
                     <button name="downgrade" type="submit" class="btn-cancel">Cancel subscription</button>
                 </form>
+            <?php elseif ($hasPending): ?>
+                <!-- pending → no form; the banner above explains why -->
+                <p class="plan-current">Request pending review…</p>
             <?php else: ?>
-
-                <!-- ── SIMULATED CHECKOUT ── -->
                 <form method="post" action="actions/process_upgrade.php" class="checkout-form">
+
                     <label for="duration">Duration</label>
                     <select name="plan_id" id="duration">
                         <?php foreach ($plans as $p): ?>
@@ -106,8 +126,7 @@ include 'includes/header.php';
 
                     <label for="card_number">Card number</label>
                     <input type="text" name="card_number" id="card_number"
-                           placeholder="4242 4242 4242 4242"
-                           autocomplete="off" required>
+                           placeholder="4242 4242 4242 4242" autocomplete="off" required>
 
                     <div class="checkout-row">
                         <div>
@@ -125,9 +144,9 @@ include 'includes/header.php';
                     <button name="checkout" type="submit" class="btn btn-primary checkout-btn">
                         Subscribe
                     </button>
-                    <p class="checkout-note">Demo checkout — no real payment.
+                    <p class="checkout-note">Demo checkout - no real payment.
                     Card details are validated then <strong>immediately discarded</strong>,
-                    never stored.</p>
+                    never stored. Subscriptions activate after admin verification.</p>
                 </form>
             <?php endif; ?>
         </div>

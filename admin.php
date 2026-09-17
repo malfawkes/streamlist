@@ -32,6 +32,17 @@ $users = $pdo->query(
 $plans = $pdo->query('SELECT id, label, months, price FROM plans
                     WHERE is_active = 1 ORDER BY months')->fetchAll(PDO::FETCH_ASSOC);
 
+// Pending subscription requests (oldest first — a real queue)
+$requests = $pdo->query(
+    'SELECT sr.id, sr.requested_at, u.name, u.email, u.tier, u.tier_expires_at,
+            p.label, p.months, p.price
+     FROM subscription_requests sr
+     INNER JOIN users u ON u.id = sr.user_id
+     INNER JOIN plans p  ON p.id  = sr.plan_id
+     WHERE sr.status = "pending"
+     ORDER BY sr.requested_at ASC'
+)->fetchAll(PDO::FETCH_ASSOC);
+
 // Movie search + results
 $movieTerm    = trim($_GET['movie_search'] ?? '');
 $movieResults = [];
@@ -68,6 +79,10 @@ include 'includes/header.php';
         <p class="message message-success">Movie deleted <?= (int) ($_GET['wl'] ?? 0) ?></p>
     <?php elseif ($status === 'error'): ?>
         <p class="message message-error"><?= htmlspecialchars($message) ?></p>
+        <?php elseif ($status === 'req-approved'): ?>
+    <p class="message message-success">Request approved. Subscription activated.</p>
+    <?php elseif ($status === 'req-rejected'): ?>
+        <p class="message message-success">Request rejected. The user has been notified.</p>
     <?php endif; ?>
 
     <!-- Stats -->
@@ -125,6 +140,47 @@ include 'includes/header.php';
             </tr>
         <?php endforeach; ?>
     </table>
+
+        <!-- ═══ PENDING SUBSCRIPTION REQUESTS ═══ -->
+    <h2>Pending Subscription Requests<?= $requests ? ' (' . count($requests) . ')' : '' ?></h2>
+    <?php if (empty($requests)): ?>
+        <p class="admin-muted">No pending requests. The queue is clear.</p>
+    <?php else: ?>
+        <table class="admin-table">
+            <tr><th>User</th><th>Plan</th><th>Requested</th><th>Actions</th></tr>
+            <?php foreach ($requests as $r): ?>
+                <tr>
+                    <td>
+                        <?= htmlspecialchars($r['name']) ?><br>
+                        <small><?= htmlspecialchars($r['email']) ?></small><br>
+                        <small>current: <?= $r['tier'] === 'premium'
+                            ? 'premium until ' . htmlspecialchars($r['tier_expires_at'] ?? '—')
+                            : 'free' ?></small>
+                    </td>
+                    <td>
+                        <?= htmlspecialchars($r['label']) ?> —
+                        $<?= number_format((float) $r['price'], 2) ?>
+                        <small>(<?= (int) $r['months'] ?> mo)</small>
+                    </td>
+                    <td><?= date('M j, g:i a', strtotime($r['requested_at'])) ?></td>
+                    <td>
+                        <form method="post" action="actions/admin_review_request.php"
+                              onsubmit="return confirm('Approve this subscription?');">
+                            <input type="hidden" name="request_id" value="<?= (int) $r['id'] ?>">
+                            <button name="approve-request" type="submit">✓ Approve</button>
+                        </form>
+                        <form method="post" action="actions/admin_review_request.php"
+                              class="admin-reject-form">
+                            <input type="hidden" name="request_id" value="<?= (int) $r['id'] ?>">
+                            <input type="text" name="admin_note" placeholder="Reason (optional)"
+                                   class="admin-note-input">
+                            <button name="reject-request" type="submit" class="admin-danger">✕ Reject</button>
+                        </form>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+        </table>
+    <?php endif; ?>
 
     <!-- SERVICES: subscription plans -->
     <h2>Subscription Plans</h2>
