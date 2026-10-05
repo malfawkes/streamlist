@@ -63,38 +63,21 @@
 
         <div class="trending-cards">
             {% for movie in trending %}
-
-				<div class="card">
-					
-					<div class="card-image">
-						<img src="{{ movie.poster_path
-								? 'https://image.tmdb.org/t/p/w342' ~ movie.poster_path
-								: asset('assets/img/canvas.png') }}"
-							 alt="Poster for {{ movie.title }}">
-					</div>
-					<p>{{ movie.title }}</p>
-					<p>
-						{% if movie.release_date is not empty %}
-                            {{ movie.release_date | date('Y') }}
-                        {% else %}
-                            Unknown Year
+                <div class="card">
+                    <img src="{{ movie.posterPath
+                        ? 'https://image.tmdb.org/t/p/w342' ~ movie.posterPath
+                        : asset('assets/img/canvas.png') }}">
+                    <p><a href="#">{{ movie.title }}</a></p>
+                    <p>
+                        {{ movie.releaseDate ? movie.releaseDate|date('Y') : 'TBA' }}
+                        {% if movie.rating and movie.rating > 0 %}
+                            | ★ {{ movie.rating|number_format(1) }}
                         {% endif %}
-						{% if movie.rating is not null and movie.rating > 0 %}
-							| ★ {{ movie.rating | number_format(1) }}
-						{% endif %}
-					</p>
-					{% if movie.is_premium %}
-						<p class="premium-badge">★ PREMIUM</p>
-					{% endif %}
-				</div>
-			{% endfor %}
+                    </p>
+                    {% if movie.isPremium %}<p class="premium-badge">★ PREMIUM</p>{% endif %}
+                </div>
+            {% endfor %}
         </div>
-
-        <div class="btn-browse-trending">
-            <a href="movies.php" class="btn-secondary">See All Trending Titles</a>
-        </div>
-    </div>
-		</div>
 
         <div class="btn-browse-trending">
             <a href="movies.php" class="btn-secondary">See All Trending Titles</a>
