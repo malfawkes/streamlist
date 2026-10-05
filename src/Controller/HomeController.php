@@ -6,32 +6,25 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Repository\MovieRepository;
+use App\Repository\GenreRepository;
 
 final class HomeController extends AbstractController
 {
     #[Route('/', name: 'app_home')]
-    public function index(MovieRepository $movieRepository): Response
+    public function index(MovieRepository $movieRepository, GenreRepository $genreRepository): Response
     {
         return $this->render('home/index.html.twig', [
             // controller action arguments = AUTOWIRING: Symfony sees the type-hint,
             // builds/injects the repository. You never new anything. (Your first
             // dependency injection — the concept I flagged as "genuinely new")
-            'trending' => $movieRepository->findTrending(5),
+            'trending'    => $movieRepository->findTrending(5),
+            'hero'        => $movieRepository->findHero(),
+            'movieCount'  => $movieRepository->countAll(),
+            'genreCount'  => $genreRepository->countAll(),
 
             // hero stays fake-for-now OR: query the top-rated backdrop movie —
             // translate your second old query the same way when ready:
             // 'hero' => $movieRepository->findHero(),
-            'movieCount' => 1000,
-            'genreCount' => 10,
-            'hero' => [
-                'title' => 'Demon Slayer: Kimetsu no Yaiba Infinity Castle',
-                'overview' => 'The Demon Slayer Corps are drawn into the Infinity Castle, where Tanjiro, Nezuko, and the Hashira face terrifying Upper Rank demons in a desperate fight as the final battle against Muzan Kibutsuji begins.',
-                'rating' => 8.8,
-                'backdrop_path' => '/1RgPyOhN4DRs225BGTlHJqCudII.jpg',
-                'poster_path' => '/fWVSwgjpT2D78VUh6X8UBd2rorW.jpg',
-                'release_date' => '2025-07-18',
-                'is_premium' => false
-            ],
         ]);
     }
 

@@ -18,7 +18,7 @@
 
             <div class="hero-stats">
                 <div>
-                    <p class="hero-stat">{{ movieCount }}</p>
+                    <p class="hero-stat">{{ movieCount|number_format }}</p>
                     <p class="hero-stat-label">Movies Indexed</p>
                 </div>
                 <div>
@@ -34,20 +34,16 @@
 
         <div class="hero-image">
             {% if hero %}
-            <!-- w780 = wider size for backdrops (posters use w342) -->
-            <img src="https://image.tmdb.org/t/p/w780{{ hero.backdrop_path }}"
-                alt={{ hero.title }} style="width: 100%; object-fit: cover; border-radius: 8px;">
-            <div class="hero-movie-info">
-                <h2>{{ hero.title }}</h2>
-                <p class="hero-movie-rating">★ {{ hero.rating | number_format(1) }} / 10</p>
-                <p>{{ hero.overview | u.truncate(180) }}…</p>
-            </div>
-            {% else %}
+                <img src="https://image.tmdb.org/t/p/w780{{ hero.backdropPath }}" alt="{{ hero.title }}" style=" object-fit: cover; border-radius: 8px;">
                 <div class="hero-movie-info">
-                    <h2>No featured movie</h2>
-                    <p>Check back later for a new featured movie.</p>
+                    <h2>{{ hero.title }}</h2>
+                    {% if hero.rating and hero.rating > 0 %}
+                        <p class="hero-movie-rating">★ {{ hero.rating|number_format(1) }} / 10</p>
+                    {% endif %}
+                    <p>{{ hero.overview|u.truncate(180) }}…</p>
                 </div>
-                <img src="{{ asset('assets/img/canvas.png') }}"  alt="Hero image of a movie theater with a film reel">
+            {% else %}
+                <img src="{{ asset('assets/img/canvas.png') }}">
             {% endif %}
         </div>
     </div>
