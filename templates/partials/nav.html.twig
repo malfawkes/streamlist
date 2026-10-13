@@ -1,21 +1,21 @@
 <header>
     <div class="wrap nav">
         <!-- Logo: links back to homepage -->
-        <a href="index.php" class="logo">
+        <a href="/" class="logo">
             <img src="{{ asset('assets/logo/g4.png') }}" alt="Streamlist icon">
             <span class="logo-text">Streamlist</span>
         </a>
 
         <!-- Main navigation links -->
         <nav class="nav-links">
-            <a href="movies.php">Trending</a>
-            <a href="genres.php">Genres</a>
-            <a href="upgrade.php">Pricing</a>
-            <a href="about.php">About</a>
+            <a href="/movies">Trending</a>
+            <a href="/genres">Genres</a>
+            <a href="/upgrade">Pricing</a>
+            <a href="/about">About</a>
         </nav>
 
         <?php if (isLoggedIn()): ?>
-            <form method="get" action="search.php" class="nav-search">
+            <form method="get" action="/search" class="nav-search">
                 <input type="text" name="q" placeholder="Search movies…" >
                        {# value="<?= htmlspecialchars($_GET['q'] ?? '') ?>"> #}
                 <button type="submit">Go</button>
@@ -28,7 +28,7 @@
                 <?php if (($_SESSION['user_tier'] ?? 'free') === 'premium'): ?>
                     <span class="plus-badge">★ PLUS</span>
                 <?php else: ?>
-                    <a href="upgrade.php" class="upgrade-link">Upgrade</a>
+                    <a href="/upgrade" class="upgrade-link">Upgrade</a>
                 <?php endif; ?>
 
                 <div class="profile-menu">
@@ -51,18 +51,18 @@
                             <p class="profile-dropdown-tier"><?= htmlspecialchars($_SESSION['user_tier'] ?? 'free') ?> member</p>
                         </div>
                         <?php if (isAdmin()): ?>
-                            <a href="admin.php" class="profile-dropdown-item">⚙ Admin Panel</a>
-                            <a href="admin_messages.php" class="profile-dropdown-item">📥 Messages</a>
+                            <a href="/admin" class="profile-dropdown-item">⚙ Admin Panel</a>
+                            <a href="/admin_messages" class="profile-dropdown-item">📥 Messages</a>
                         <?php endif; ?>
-                        <a href="profile.php" class="profile-dropdown-item">Profile</a>
-                        <a href="watchlist.php" class="profile-dropdown-item">My Watchlist</a>
-                        <a href="upgrade.php" class="profile-dropdown-item">Subscription</a>
-                        <a href="logout.php" class="profile-dropdown-item profile-dropdown-logout">Log Out</a>
+                        <a href="/profile" class="profile-dropdown-item">Profile</a>
+                        <a href="/watchlist" class="profile-dropdown-item">My Watchlist</a>
+                        <a href="/upgrade" class="profile-dropdown-item">Subscription</a>
+                        <a href="/logout" class="profile-dropdown-item profile-dropdown-logout">Log Out</a>
                     </div>
                 </div>
             <?php else: ?>
-                <a href="login.php" class="login">Log In</a>
-                <a href="register.php" class="btn btn-primary">Sign Up</a>
+                <a href="/login" class="login">Log In</a>
+                <a href="/register" class="btn btn-primary">Sign Up</a>
             <?php endif; ?>
         </div>
     </div>

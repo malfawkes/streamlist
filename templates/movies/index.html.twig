@@ -35,7 +35,7 @@
     {% if movies|length > 0 %}
         <div class="trending-cards">
             {% for movie in movies %}
-                {{ include('_partials/_movie_card.html.twig', {movie: movie}) }}
+                {{ include('partials/movie_card.html.twig', {movie: movie}) }}
             {% endfor %}
         </div>
 

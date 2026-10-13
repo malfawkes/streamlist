@@ -27,4 +27,13 @@ class GenreRepository extends ServiceEntityRepository
                  ORDER BY g.name'
             );
     }
+
+    // homepage stat: total genres
+    public function countAll(): int
+    {
+        return (int) $this->createQueryBuilder('g')
+            ->select('count(g.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }
