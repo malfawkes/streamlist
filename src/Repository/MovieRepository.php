@@ -6,20 +6,25 @@ use App\Entity\Movie;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-
 /**
  * @extends ServiceEntityRepository<Movie>
  */
 class MovieRepository extends ServiceEntityRepository
 {
+    // Allow-listed sort map — only strings WE wrote reach the query
+    // (your old $sortMap, translated — injection-safe by construction)
+    private const SORT_MAP = [
+        'date'   => ['m.releaseDate', 'DESC'],
+        'rating' => ['m.rating', 'DESC'],
+        'title'  => ['m.title', 'ASC'],
+    ];
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Movie::class);
     }
 
-    /**
-     * The homepage trending strip: newest RELEASED movies.
-     */
+    // ── homepage: trending strip
     public function findTrending(int $limit = 5): array
     {
         return $this->createQueryBuilder('m')
@@ -31,58 +36,63 @@ class MovieRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    public function countAll(): int
-    {
-        return (int) $this->createQueryBuilder('m')
-            ->select('count(m.id)')          // ← NEW: COUNT via the query builder
-            ->getQuery()
-            ->getSingleScalarResult();       // ← NEW: returns ONE value, not objects
-            //    (your fetchColumn() equivalent — same job: "give me the single number")
-    }
-
+    // ── homepage: hero (top rated with backdrop) 
     public function findHero(): ?Movie
     {
         return $this->createQueryBuilder('m')
-            ->andWhere('m.backdropPath IS NOT NULL')       // Twig/ORM: IS NOT NULL, no parameter needed
+            ->andWhere('m.backdropPath IS NOT NULL')
             ->andWhere('m.rating IS NOT NULL')
             ->orderBy('m.rating', 'DESC')
             ->setMaxResults(1)
             ->getQuery()
-            ->getOneOrNullResult();      // ← one Movie object or null — your fetch() equivalent
-    }    
+            ->getOneOrNullResult();
+    }
 
-    public function findPaginated(int $page, int $perPage): array
+    // ── homepage: stat 
+    public function countAll(): int
     {
-        return $this->createQueryBuilder('m')
-            ->orderBy('m.releaseDate', 'DESC')
-            ->setFirstResult(($page - 1) * $perPage)   // ← OFFSET
-            ->setMaxResults($perPage)                   // ← LIMIT
+        return (int) $this->createQueryBuilder('m')
+            ->select('count(m.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    // ── movies page: the paginated grid (genre + sort aware) 
+    public function findPaginated(int $page, int $perPage, ?int $genreId = null, string $sort = 'date'): array
+    {
+        $qb = $this->createQueryBuilder('m')
+            ->andWhere('m.releaseDate <= :today')          // parity: exclude upcoming
+            ->setParameter('today', new \DateTime('today'));
+
+        if ($genreId !== null) {
+            $qb->innerJoin('m.genres', 'g')
+               ->andWhere('g.id = :gid')
+               ->setParameter('gid', $genreId);
+        }
+
+        [$field, $direction] = self::SORT_MAP[$sort] ?? self::SORT_MAP['date'];
+
+        return $qb->orderBy($field, $direction)
+            ->setFirstResult(($page - 1) * $perPage)       
+            ->setMaxResults($perPage)                       
             ->getQuery()
             ->getResult();
     }
 
-//    /**
-//     * @return Movie[] Returns an array of Movie objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('m')
-//            ->andWhere('m.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('m.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+    // ── movies page: total for pagination math (genre aware) 
+    public function countFiltered(?int $genreId = null): int
+    {
+        $qb = $this->createQueryBuilder('m')
+            ->select('count(m.id)')
+            ->andWhere('m.releaseDate <= :today')
+            ->setParameter('today', new \DateTime('today'));
 
-//    public function findOneBySomeField($value): ?Movie
-//    {
-//        return $this->createQueryBuilder('m')
-//            ->andWhere('m.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+        if ($genreId !== null) {
+            $qb->innerJoin('m.genres', 'g')
+               ->andWhere('g.id = :gid')
+               ->setParameter('gid', $genreId);
+        }
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
+    }
 }

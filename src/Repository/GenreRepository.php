@@ -16,37 +16,15 @@ class GenreRepository extends ServiceEntityRepository
         parent::__construct($registry, Genre::class);
     }
 
-    // GenreRepository
-    public function countAll(): int
+    public function findAllWithCounts(): array
     {
-        return (int) $this->createQueryBuilder('g')
-            ->select('count(g.id)')
-            ->getQuery()
-            ->getSingleScalarResult();
+        return $this->getEntityManager()->getConnection()
+            ->fetchAllAssociative(
+                'SELECT g.id, g.name, COUNT(mg.movie_id) AS movie_count
+                 FROM genres g
+                 LEFT JOIN movie_genres mg ON mg.genre_id = g.id
+                 GROUP BY g.id, g.name
+                 ORDER BY g.name'
+            );
     }
-
-//    /**
-//     * @return Genre[] Returns an array of Genre objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('g')
-//            ->andWhere('g.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('g.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
-
-//    public function findOneBySomeField($value): ?Genre
-//    {
-//        return $this->createQueryBuilder('g')
-//            ->andWhere('g.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
 }

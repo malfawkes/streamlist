@@ -1,0 +1,58 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ currentGenre ? currentGenre.name ~ ' Movies' : 'Trending Now' }} — StreamList{% endblock %}
+
+{% block body %}
+<div class="wrap">
+
+    <h1>{{ currentGenre ? currentGenre.name ~ ' Movies' : 'Trending Now' }}</h1>
+    <p>{{ total }} movies.</p>
+
+    {# ── genre chips (with counts) ── #}
+    <div class="genre-chips">
+        <a href="{{ path('app_movies') }}"
+           class="chip {{ currentGenre ? '' : 'chip-active' }}">All</a>
+        {% for g in genres %}
+            <a href="{{ path('app_movies', {genre: g.id}) }}"
+               class="chip {{ currentGenre and currentGenre.id == g.id ? 'chip-active' : '' }}">
+                {{ g.name }} ({{ g.movie_count }})
+            </a>
+        {% endfor %}
+    </div>
+
+    {# ── sort chips — genre preserved via `base` ── #}
+    <div class="sort-bar">
+        <span>Sort by:</span>
+        {% set base = currentGenre ? {genre: currentGenre.id} : {} %}
+        <a href="{{ path('app_movies', base) }}"
+           class="chip {{ sort == 'date' ? 'chip-active' : '' }}">Newest</a>
+        <a href="{{ path('app_movies', base|merge({sort: 'rating'})) }}"
+           class="chip {{ sort == 'rating' ? 'chip-active' : '' }}">Top Rated</a>
+        <a href="{{ path('app_movies', base|merge({sort: 'title'})) }}"
+           class="chip {{ sort == 'title' ? 'chip-active' : '' }}">A–Z</a>
+    </div>
+
+    {% if movies|length > 0 %}
+        <div class="trending-cards">
+            {% for movie in movies %}
+                {{ include('_partials/_movie_card.html.twig', {movie: movie}) }}
+            {% endfor %}
+        </div>
+
+        {# ── pager — genre + sort preserved (the state lesson, path()-edition) ── #}
+        {% set keep = base|merge(sort != 'date' ? {sort: sort} : {}) %}
+        <div class="pagination">
+            {% if page > 1 %}
+                <a href="{{ path('app_movies', keep|merge({page: page - 1})) }}">&larr; Previous</a>
+            {% endif %}
+            <span>Page {{ page }} of {{ totalPages }}</span>
+            {% if page < totalPages %}
+                <a href="{{ path('app_movies', keep|merge({page: page + 1})) }}">Next &rarr;</a>
+            {% endif %}
+        </div>
+    {% else %}
+        <p>No movies in this genre yet.</p>
+    {% endif %}
+
+</div>
+{% endblock %}

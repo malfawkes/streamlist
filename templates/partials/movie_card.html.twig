@@ -1,0 +1,18 @@
+<div class="card">
+    <div class="card-image">
+        <img src="{{ movie.posterPath
+                ? 'https://image.tmdb.org/t/p/w342' ~ movie.posterPath
+                : asset('assets/img/canvas.png') }}"
+             alt="Poster for {{ movie.title }}">
+    </div>
+    <p class="card-title">{{ movie.title }}</p>
+    <p>
+        {{ movie.releaseDate ? movie.releaseDate|date('Y') : 'TBA' }}
+        {% if movie.rating and movie.rating > 0 %}
+            | ★ {{ movie.rating|number_format(1) }}
+        {% endif %}
+    </p>
+    {% if movie.isPremium %}
+        <p class="premium-badge">★ PREMIUM</p>
+    {% endif %}
+</div>
