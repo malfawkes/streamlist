@@ -51,6 +51,16 @@ class MovieRepository extends ServiceEntityRepository
             ->getOneOrNullResult();      // ← one Movie object or null — your fetch() equivalent
     }    
 
+    public function findPaginated(int $page, int $perPage): array
+    {
+        return $this->createQueryBuilder('m')
+            ->orderBy('m.releaseDate', 'DESC')
+            ->setFirstResult(($page - 1) * $perPage)   // ← OFFSET
+            ->setMaxResults($perPage)                   // ← LIMIT
+            ->getQuery()
+            ->getResult();
+    }
+
 //    /**
 //     * @return Movie[] Returns an array of Movie objects
 //     */
