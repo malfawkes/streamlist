@@ -1,0 +1,32 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Log In — StreamList{% endblock %}
+
+{% block body %}
+<div class="wrap">
+    <section class="login-section">
+        <div class="login-wrap">
+            <h1>Welcome Back</h1>
+
+            {% if error %}
+                <p class="message message-error">{{ error.messageKey|trans(error.messageData, 'security') }}</p>
+            {% endif %}
+
+            <form method="post" action="{{ path('app_login') }}">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+                <label for="email">Email:</label><br>
+                <input type="email" name="email" id="email"
+                       value="{{ last_username }}" required><br>
+
+                <label for="password">Password:</label><br>
+                <input type="password" name="password" id="password" required><br>
+
+                <button type="submit">Log In</button>
+            </form>
+
+            <p>No account yet? <a href="{{ path('app_home') }}">Sign up coming soon</a></p>
+        </div>
+    </section>
+</div>
+{% endblock %}

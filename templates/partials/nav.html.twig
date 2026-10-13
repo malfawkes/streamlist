@@ -14,56 +14,54 @@
             <a href="/about">About</a>
         </nav>
 
-        <?php if (isLoggedIn()): ?>
+        {% if app.user %}
             <form method="get" action="/search" class="nav-search">
                 <input type="text" name="q" placeholder="Search movies…" >
                        {# value="<?= htmlspecialchars($_GET['q'] ?? '') ?>"> #}
                 <button type="submit">Go</button>
             </form>
-        <?php endif; ?>
+        {% endif %}
 
         
         <div class="nav-auth">
-            <?php if (isLoggedIn()): ?>
-                <?php if (($_SESSION['user_tier'] ?? 'free') === 'premium'): ?>
+            {% if app.user %}
+                {% if app.user.tier == 'premium' %}
                     <span class="plus-badge">★ PLUS</span>
-                <?php else: ?>
-                    <a href="/upgrade" class="upgrade-link">Upgrade</a>
-                <?php endif; ?>
+                {% else %}
+                    <a href="{{ path('app_home') }}" class="upgrade-link">Upgrade</a>
+                {% endif %}
 
                 <div class="profile-menu">
                     <button type="button" class="profile-btn">
                         <span class="profile-avatar">
-                            <?php if (!empty($_SESSION['user_avatar'])): ?>
-                                <img src="<?= htmlspecialchars($_SESSION['user_avatar']) ?>" alt="">
-                            <?php else: ?>
-                                <?= strtoupper(htmlspecialchars(mb_substr($_SESSION['user_name'], 0, 1))) ?>
-                            <?php endif; ?>
+                            {% if app.user.avatarPath is defined and app.user.avatarPath %}
+                                <img src="{{ asset(app.user.avatarPath) }}" alt="">
+                            {% else %}
+                                {{ app.user.name|first|upper }}
+                            {% endif %}
                         </span>
-                        <span class="profile-name"><?= htmlspecialchars($_SESSION['user_name']) ?></span>
+                        <span class="profile-name">{{ app.user.name }}</span>
                         <span class="profile-caret">▾</span>
                     </button>
 
                     <div class="profile-dropdown">
                         <div class="profile-dropdown-header">
-                            <p class="profile-dropdown-name"><?= htmlspecialchars($_SESSION['user_name']) ?></p>
-                            <p class="profile-dropdown-email"><?= htmlspecialchars($_SESSION['user_email'] ?? '') ?></p>
-                            <p class="profile-dropdown-tier"><?= htmlspecialchars($_SESSION['user_tier'] ?? 'free') ?> member</p>
+                            <p class="profile-dropdown-name">{{ app.user.name }}</p>
+                            <p class="profile-dropdown-email">{{ app.user.email }}</p>
+                            <p class="profile-dropdown-tier">{{ app.user.tier }} member</p>
                         </div>
-                        <?php if (isAdmin()): ?>
-                            <a href="/admin" class="profile-dropdown-item">⚙ Admin Panel</a>
-                            <a href="/admin_messages" class="profile-dropdown-item">📥 Messages</a>
-                        <?php endif; ?>
-                        <a href="/profile" class="profile-dropdown-item">Profile</a>
-                        <a href="/watchlist" class="profile-dropdown-item">My Watchlist</a>
-                        <a href="/upgrade" class="profile-dropdown-item">Subscription</a>
-                        <a href="/logout" class="profile-dropdown-item profile-dropdown-logout">Log Out</a>
+                        {% if 'ROLE_ADMIN' in app.user.roles %}
+                            <a href="{{ path('app_home') }}" class="profile-dropdown-item">⚙ Admin Panel</a>
+                        {% endif %}
+                        <a href="{{ path('app_home') }}" class="profile-dropdown-item">Profile</a>
+                        <a href="{{ path('app_home') }}" class="profile-dropdown-item">My Watchlist</a>
+                        <a href="{{ path('app_home') }}" class="profile-dropdown-item">Subscription</a>
+                        <a href="{{ path('app_logout') }}" class="profile-dropdown-item profile-dropdown-logout">Log Out</a>
                     </div>
                 </div>
-            <?php else: ?>
-                <a href="/login" class="login">Log In</a>
-                <a href="/register" class="btn btn-primary">Sign Up</a>
-            <?php endif; ?>
+            {% else %}
+                <a href="{{ path('app_login') }}" class="login">Log In</a>
+            {% endif %}
         </div>
     </div>
 </header>
