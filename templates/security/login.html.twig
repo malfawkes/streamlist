@@ -8,6 +8,10 @@
         <div class="login-wrap">
             <h1>Welcome Back</h1>
 
+            {% for flash in app.flashes('success') %}
+                <p class="message message-success">{{ flash }}</p>
+            {% endfor %}
+
             {% if error %}
                 <p class="message message-error">{{ error.messageKey|trans(error.messageData, 'security') }}</p>
             {% endif %}
