@@ -1,19 +1,29 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Register{% endblock %}
+{% block title %}Create Account — StreamList{% endblock %}
 
 {% block body %}
-    <h1>Register</h1>
+<div class="wrap">
+    <section class="register-section">
+        <div class="register-wrap">
+            <h1>Create New Account</h1>
 
-    {{ form_errors(registrationForm) }}
+            {% for flash_error in app.flashes('success') %}
+                <p class="message message-success">{{ flash_error }}</p>
+            {% endfor %}
 
-    {{ form_start(registrationForm) }}
-        {{ form_row(registrationForm.email) }}
-        {{ form_row(registrationForm.plainPassword, {
-            label: 'Password'
-        }) }}
-        {{ form_row(registrationForm.agreeTerms) }}
+            {{ form_errors(registrationForm) }}
 
-        <button type="submit" class="btn">Register</button>
-    {{ form_end(registrationForm) }}
+            {{ form_start(registrationForm) }}
+                {{ form_row(registrationForm.name) }}
+                {{ form_row(registrationForm.email) }}
+                {{ form_row(registrationForm.plainPassword, {label: 'Password'}) }}
+
+                <button type="submit" class="btn">Create Account</button>
+            {{ form_end(registrationForm) }}
+
+            <p>Already have an account? <a href="{{ path('app_login') }}">Log In</a></p>
+        </div>
+    </section>
+</div>
 {% endblock %}

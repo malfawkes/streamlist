@@ -10,7 +10,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Contracts\Translation\TranslatorInterface;
 
 class RegistrationController extends AbstractController
 {
@@ -25,13 +24,17 @@ class RegistrationController extends AbstractController
             /** @var string $plainPassword */
             $plainPassword = $form->get('plainPassword')->getData();
 
-            // encode the plain password
+            // your password_hash(), framework-run
             $user->setPassword($userPasswordHasher->hashPassword($user, $plainPassword));
+
+            // ── your defaults, explicit ──
+            $user->setTier('free');      // your old DB default, now in code
 
             $entityManager->persist($user);
             $entityManager->flush();
 
-            // do anything else you need here, like send an email
+            // flash = your message envelope, session-based edition
+            $this->addFlash('success', 'Account created — please log in.');
 
             return $this->redirectToRoute('app_login');
         }
