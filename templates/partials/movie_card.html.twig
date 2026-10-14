@@ -15,4 +15,14 @@
     {% if movie.isPremium %}
         <p class="premium-badge">★ PREMIUM</p>
     {% endif %}
+
+    {# ── add form — only when logged in (app.user, the session read) ── #}
+    {% if app.user %}
+        <form method="post"
+              action="{{ path('app_watchlist_add', {id: movie.id}) }}">
+            <input type="hidden" name="_token"
+                   value="{{ csrf_token('watchlist_add_' ~ movie.id) }}">
+            <button type="submit">+ Watchlist</button>
+        </form>
+    {% endif %}
 </div>

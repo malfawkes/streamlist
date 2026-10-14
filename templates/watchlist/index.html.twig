@@ -1,0 +1,58 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}My Watchlist — StreamList{% endblock %}
+
+{% block body %}
+<div class="wrap">
+    <h1>My Watchlist</h1>
+
+    {# ── flash messages: your envelope, session edition ── #}
+    {% for flash in app.flashes('success') %}
+        <p class="message message-success">{{ flash }}</p>
+    {% endfor %}
+    {% for flash in app.flashes('error') %}
+        <p class="message message-error">{{ flash }}</p>
+    {% endfor %}
+
+    <p>{{ count }} titles</p>
+
+    {% if items|length > 0 %}
+        <div class="trending-cards">
+            {% for item in items %}
+                {% set movie = item.movie %}
+                <div class="card">
+                    <div class="card-image">
+                        <img src="{{ movie.posterPath
+                                ? 'https://image.tmdb.org/t/p/w342' ~ movie.posterPath
+                                : asset('assets/img/canvas.png') }}"
+                             alt="Poster for {{ movie.title }}">
+                    </div>
+                    <p class="card-title">{{ movie.title }}</p>
+                    <p>
+                        {{ movie.releaseDate ? movie.releaseDate|date('Y') : 'TBA' }}
+                        {% if movie.rating and movie.rating > 0 %}
+                            | ★ {{ movie.rating|number_format(1) }}
+                        {% endif %}
+                    </p>
+                    <p class="admin-muted">Added {{ item.createdAt|date('M j, Y') }}</p>
+
+                    {# ── remove form: POST + CSRF token, per-movie ID ── #}
+                    <form method="post"
+                          action="{{ path('app_watchlist_remove', {id: movie.id}) }}"
+                          onsubmit="return confirm('Remove this movie from your watchlist?');">
+                        <input type="hidden" name="_token"
+                               value="{{ csrf_token('watchlist_remove_' ~ movie.id) }}">
+                        <button type="submit">✕ Remove</button>
+                    </form>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-watchlist">
+            <h2>Your watchlist is empty</h2>
+            <p>Find something worth watching — browse what's trending right now.</p>
+            <a href="{{ path('app_movies') }}" class="btn btn-primary">Browse Trending Movies</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
