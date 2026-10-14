@@ -35,11 +35,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 10)]
     private ?string $tier = 'free';
 
-    #[ORM\Column(name: 'is_admin', type: 'boolean', nullable: true)]
-    private ?bool $isAdmin = null;
+    #[ORM\Column(name: 'is_admin', type: 'boolean')]
+    private ?bool $isAdmin = false;
 
     #[ORM\Column(name: 'tier_expires_at', type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTime $tierExpiresAt = null;
+
+    public function __construct()
+    {
+        $this->isAdmin = false;        // every new user starts non-admin
+        $this->tier = 'free';          // move the tier default here too (bonus)
+    }
 
     public function getId(): ?int
     {
