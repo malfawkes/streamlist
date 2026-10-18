@@ -77,6 +77,29 @@
                 </p>
             </section>
 
+            {% if cast|length %}
+                <section class="md-card">
+                    <h2>Top billed cast</h2>
+                    <div class="md-cast">
+                        {% for credit in cast %}
+                            <div class="md-cast__member">
+                                {% if credit.profilePath %}
+                                    <img
+                                        src="https://image.tmdb.org/t/p/w185{{ credit.profilePath }}"
+                                        alt="{{ credit.name }}"
+                                        loading="lazy"
+                                    >
+                                {% else %}
+                                    <div class="md-cast__placeholder">No photo</div>
+                                {% endif %}
+                                <p class="md-cast__name">{{ credit.name }}</p>
+                                <p class="md-cast__character">{{ credit.characterName ?: '—' }}</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </section>
+            {% endif %}
+
             {% if movie.trailerKey %}
                 <section class="md-card">
                     <h2>Trailer</h2>

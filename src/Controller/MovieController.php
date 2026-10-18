@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Movie;
 use App\Entity\User;
+use App\Repository\MovieCreditRepository;
 use App\Repository\WatchlistItemRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,6 +22,7 @@ class MovieController extends AbstractController
     public function show(
         Movie $movie,
         WatchlistItemRepository $watchlistRepo,
+        MovieCreditRepository $creditRepo,
         CsrfTokenManagerInterface $csrf
     ): Response {
         $inWatchlist = false;
@@ -39,6 +41,7 @@ class MovieController extends AbstractController
 
         return $this->render('movie/show.html.twig', [
             'movie'            => $movie,
+            'cast'             => $creditRepo->findTopCast($movie),
             'in_watchlist'     => $inWatchlist,
             'watchlist_action' => $action,
             'watchlist_token'  => $csrf->getToken($tokenId)->getValue(),

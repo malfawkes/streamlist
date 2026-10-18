@@ -1,0 +1,7 @@
+# Tests run read-only against the dev database: `streamlist_app` has no
+# CREATE privilege, so the recipe's `dbname_suffix: '_test'` (which expects
+# a separate, created-ahead-of-time test database) cannot be satisfied.
+# Drop the suffix until a real `streamlist_test` database exists.
+doctrine:
+    dbal:
+        dbname_suffix: ''
