@@ -56,6 +56,11 @@ class Movie
         $this->genres = new ArrayCollection();
     }
 
+    public function getGenres(): Collection
+    {
+        return $this->genres;
+    }
+
     public function getId(): ?int
     {
         return $this->id;

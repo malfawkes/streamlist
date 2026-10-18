@@ -3,19 +3,45 @@
 namespace App\Controller;
 
 use App\Entity\Movie;
+use App\Entity\User;
+use App\Repository\WatchlistItemRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 
-final class MovieController extends AbstractController
+class MovieController extends AbstractController
 {
-    #[Route('/movie/{id}', name: 'app_movie', requirements: ['id' => '\d+'])]
-    #[IsGranted('IS_AUTHENTICATED_FULLY')]      // your old requireLogin()
-    public function show(Movie $movie): Response
-    {
-        return $this->render('movie/index.html.twig', [
-            'movie' => $movie,
+    #[Route(
+        '/movie/{id}',
+        name: 'app_movie_show',
+        requirements: ['id' => '\d+'],
+        methods: ['GET']
+    )]
+    public function show(
+        Movie $movie,
+        WatchlistItemRepository $watchlistRepo,
+        CsrfTokenManagerInterface $csrf
+    ): Response {
+        $inWatchlist = false;
+        $user = $this->getUser();
+
+        if ($user instanceof User) {
+            $existing = $watchlistRepo->findOneBy([
+                'user' => $user,
+                'movie' => $movie,
+            ]);
+            $inWatchlist = $existing !== null;
+        }
+
+        $action  = $inWatchlist ? 'app_watchlist_remove' : 'app_watchlist_add';
+        $tokenId = ($inWatchlist ? 'watchlist_remove_' : 'watchlist_add_') . $movie->getId();
+
+        return $this->render('movie/show.html.twig', [
+            'movie'            => $movie,
+            'in_watchlist'     => $inWatchlist,
+            'watchlist_action' => $action,
+            'watchlist_token'  => $csrf->getToken($tokenId)->getValue(),
         ]);
     }
 }
