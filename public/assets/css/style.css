@@ -2122,7 +2122,8 @@ h2 {
 
 .md-hero__chip--muted { opacity: .6; }
 
-/* ── CTA: gradient pill; ghost when the form action contains "remove" ── */
+/* ── CTA: white pill; inverted black pill when the form action
+   contains "remove" ── */
 .md-hero__cta button,
 .md-hero__login {
     display: inline-flex;
@@ -2149,16 +2150,16 @@ h2 {
 }
 
 .md-hero__cta[action*="remove"] button {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.32);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    box-shadow: none;
+    background: #0f111a;
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    box-shadow: 0 10px 26px rgba(10, 14, 22, 0.35);
 }
 
 .md-hero__cta[action*="remove"] button:hover {
-    background: rgba(255, 255, 255, 0.18);
-    transform: translateY(-1px);
+    background: #232936;
+    transform: translateY(-2px);
+    box-shadow: 0 14px 32px rgba(10, 14, 22, 0.42);
     filter: none;
 }
 
