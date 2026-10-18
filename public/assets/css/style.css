@@ -2032,7 +2032,7 @@ h2 {
    is possible. Namespacing beats specificity.
    ═══════════════════════════════════════════════════════════════ */
 .md-page {
-    --md-accent: #f97316;          /* brand orange — change here, once */
+    --md-accent: #0f111a;          /* brand orange — change here, once */
     --md-accent-soft: #ff9d2e;
 }
 
@@ -2131,21 +2131,21 @@ h2 {
     padding: .85rem 1.9rem;
     border: 0;
     border-radius: 999px;
-    background: linear-gradient(135deg, var(--md-accent-soft), var(--md-accent));
-    color: #fff;
+    background: #ffffff;
+    color: #0f111a;
     font-weight: 700;
     font-size: 1rem;
     text-decoration: none;
     cursor: pointer;
-    box-shadow: 0 10px 26px rgba(249, 115, 22, 0.38);
-    transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+    box-shadow: 0 10px 26px rgba(10, 14, 22, 0.35);
+    transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
 }
 
 .md-hero__cta button:hover,
 .md-hero__login:hover {
     transform: translateY(-2px);
-    box-shadow: 0 14px 32px rgba(249, 115, 22, 0.46);
-    filter: brightness(1.05);
+    box-shadow: 0 14px 32px rgba(10, 14, 22, 0.42);
+    background: #f3f4f6;
 }
 
 .md-hero__cta[action*="remove"] button {
