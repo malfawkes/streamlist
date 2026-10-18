@@ -3,58 +3,58 @@
 {% block title %}{{ movie.title }} — StreamList{% endblock %}
 
 {% block body %}
-<article class="movie-page">
+<article class="md-page">
     <section
-        class="movie-hero{% if not movie.backdropPath %} movie-hero--empty{% endif %}"
+        class="md-hero{% if not movie.backdropPath %} md-hero--empty{% endif %}"
         {% if movie.backdropPath %}
             style="background-image: url('https://image.tmdb.org/t/p/w1280{{ movie.backdropPath }}')"
         {% endif %}
     >
-        <div class="movie-hero__scrim">
-            <div class="movie-hero__content">
+        <div class="md-hero__scrim">
+            <div class="md-hero__content">
                 <h1>{{ movie.title }}</h1>
 
-                <p class="movie-hero__meta">
-                    <span class="movie-hero__rating">★ {{ movie.rating }}</span>
+                <p class="md-hero__meta">
+                    <span class="md-hero__rating">★ {{ movie.rating }}</span>
                     {% if movie.releaseDate %}
                         <span>{{ movie.releaseDate|date('Y') }}</span>
                     {% endif %}
                 </p>
 
-                <div class="movie-hero__genres">
+                <div class="md-hero__genres">
                     {% for genre in movie.genres %}
-                        <span class="movie-hero__chip">{{ genre.name }}</span>
+                        <span class="md-hero__chip">{{ genre.name }}</span>
                     {% else %}
-                        <span class="movie-hero__chip movie-hero__chip--muted">Uncategorized</span>
+                        <span class="md-hero__chip md-hero__chip--muted">Uncategorized</span>
                     {% endfor %}
                 </div>
 
                 {% if app.user %}
-                    <form action="{{ path(watchlist_action, {id: movie.id}) }}" method="post" class="movie-hero__cta">
+                    <form action="{{ path(watchlist_action, {id: movie.id}) }}" method="post" class="md-hero__cta">
                         <input type="hidden" name="_token" value="{{ watchlist_token }}">
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit">
                             {{ in_watchlist ? 'Remove from watchlist' : '+ Add to watchlist' }}
                         </button>
                     </form>
                 {% else %}
-                    <a href="{{ path('app_login') }}" class="btn btn-primary">Log in to add to your watchlist</a>
+                    <a href="{{ path('app_login') }}" class="md-hero__login">Log in to add to your watchlist</a>
                 {% endif %}
             </div>
         </div>
     </section>
 
-    <div class="movie-body">
-        <aside class="movie-poster">
+    <div class="md-body">
+        <aside class="md-poster">
             {% if movie.posterPath %}
                 <img
                     src="https://image.tmdb.org/t/p/w342{{ movie.posterPath }}"
                     alt="{{ movie.title }} poster"
                 >
             {% else %}
-                <div class="movie-poster--empty">No poster available</div>
+                <div class="md-poster--empty">No poster available</div>
             {% endif %}
 
-            <div class="movie-facts">
+            <div class="md-facts">
                 <h3>Details</h3>
                 <dl>
                     <dt>Release date</dt>
@@ -69,18 +69,18 @@
             </div>
         </aside>
 
-        <div class="movie-info">
-            <section class="movie-section">
+        <div class="md-info">
+            <section class="md-card">
                 <h2>Overview</h2>
-                <p class="movie-overview">
+                <p class="md-overview">
                     {{ movie.overview ?: 'No overview available yet.' }}
                 </p>
             </section>
 
             {% if movie.trailerKey %}
-                <section class="movie-section">
+                <section class="md-card">
                     <h2>Trailer</h2>
-                    <div class="movie-trailer">
+                    <div class="md-trailer">
                         <iframe
                             src="https://www.youtube.com/embed/{{ movie.trailerKey }}"
                             title="{{ movie.title }} trailer"
