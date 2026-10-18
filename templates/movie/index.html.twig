@@ -1,20 +1,82 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello MovieController!{% endblock %}
+{% block title %}{{ movie.title }} — StreamList{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
+<main>
 
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
+    {# ── CINEMATIC HERO: backdrop + scrim + overlapping poster ── #}
+    <section class="movie-hero">
+        {% if movie.backdropPath %}
+            <img class="movie-hero-backdrop"
+                 src="https://image.tmdb.org/t/p/w1280{{ movie.backdropPath }}"
+                 alt="{{ movie.title }}">
+        {% endif %}
+        <div class="movie-hero-scrim"></div>
 
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>C:/Users/Mal/Documents/Project-Web/streamlist-sf/src/Controller/MovieController.php</code></li>
-        <li>Your template at <code>C:/Users/Mal/Documents/Project-Web/streamlist-sf/templates/movie/index.html.twig</code></li>
-    </ul>
-</div>
+        <div class="wrap movie-hero-content">
+            {% if movie.posterPath %}
+                <img class="movie-poster"
+                     src="https://image.tmdb.org/t/p/w342{{ movie.posterPath }}"
+                     alt="Poster for {{ movie.title }}">
+            {% endif %}
+
+            <div class="movie-hero-info">
+                <h1>{{ movie.title }}</h1>
+
+                <p class="movie-meta">
+                    {{ movie.releaseDate ? movie.releaseDate|date('Y') : 'TBA' }}
+                    {% if movie.rating and movie.rating > 0 %}
+                        <span class="movie-rating">★ {{ movie.rating|number_format(1) }}</span>
+                    {% endif %}
+                    {% if movie.isPremium %}
+                        <span class="premium-badge">★ PREMIUM</span>
+                    {% endif %}
+                </p>
+
+                {# add-to-watchlist: POST + per-movie CSRF (token ID must match
+                   the controller's 'watchlist_add_' ~ id exactly) #}
+                <form method="post"
+                      action="{{ path('app_watchlist_add', {id: movie.id}) }}"
+                      class="movie-actions">
+                    <input type="hidden" name="_token"
+                           value="{{ csrf_token('watchlist_add_' ~ movie.id) }}">
+                    <button type="submit" class="movie-btn-primary">+ Add to Watchlist</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    {# ── BODY: overview, genre chips, trailer ── #}
+    <section class="movie-body">
+        <div class="wrap">
+            <h2>Overview</h2>
+            <p class="movie-overview">{{ movie.overview ?: 'No description available.' }}</p>
+            {% if movie.genres|length > 0 %}
+                <div class="genre-chips movie-genres">
+                    {% for genre in movie.genres %}
+                        <a href="{{ path('app_movies', {genre: genre.id}) }}" class="chip">
+                            {{ genre.name }}
+                        </a>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if movie.trailerKey %}
+                <h2>Official Trailer</h2>
+                <iframe class="movie-trailer"
+                        src="https://www.youtube.com/embed/{{ movie.trailerKey }}"
+                        title="Trailer for {{ movie.title }}"
+                        frameborder="0"
+                        allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen></iframe>
+            {% else %}
+                <p class="movie-no-trailer">No trailer available for this title yet.</p>
+            {% endif %}
+
+            <p><a href="{{ path('app_movies') }}">← Back to movies</a></p>
+        </div>
+    </section>
+
+</main>
 {% endblock %}

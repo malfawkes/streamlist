@@ -5,7 +5,7 @@
                 : asset('assets/img/canvas.png') }}"
              alt="Poster for {{ movie.title }}">
     </div>
-    <p class="card-title">{{ movie.title }}</p>
+    <p class="card-title"><a href="{{ path('app_movie', {id: movie.id}) }}">{{ movie.title }}</a></p>
     <p>
         {{ movie.releaseDate ? movie.releaseDate|date('Y') : 'TBA' }}
         {% if movie.rating and movie.rating > 0 %}
