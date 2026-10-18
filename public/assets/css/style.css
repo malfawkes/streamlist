@@ -2025,27 +2025,44 @@ h2 {
 }
 
 /* ── Movie detail page ──────────────────────────────────── */
-.movie-hero {
+/* ═══════════════════════════════════════════════════════════════
+   Movie detail page — v2
+   Speaks the app's design tokens (Lato, light surfaces, soft borders)
+   + two page-local tokens so the brand accent lives in ONE place.
+   Hero rules are scoped under .movie-page so they can never collide
+   with the legacy .movie-hero block used by the /movies listing.
+   ═══════════════════════════════════════════════════════════════ */
+.movie-page {
+    --movie-accent: #f97316;        /* swap brand orange here, once */
+    --movie-accent-soft: #ff9d2e;
+}
+
+/* ── Hero ─────────────────────────────────────────────── */
+.movie-page .movie-hero {
     position: relative;
-    min-height: 60vh;
-    background-size: cover;
-    background-position: center;
+    height: auto;                            /* neutralizes legacy height bleed */
+    min-height: clamp(420px, 68vh, 760px);
     display: flex;
     align-items: flex-end;
+    background-size: cover;
+    background-position: center 20%;
     color: #fff;
 }
 
-.movie-hero--empty { background: #0f172a; }
+.movie-hero--empty { background: #10141c; }
 
 .movie-hero__scrim {
     width: 100%;
-    padding: 6rem 2rem 3rem;
-    background: linear-gradient(
-        to top,
-        rgba(8, 12, 20, 0.98) 0%,
-        rgba(8, 12, 20, 0.75) 45%,
-        rgba(8, 12, 20, 0.25) 100%
-    );
+    padding: 7rem 2rem 3.5rem;
+    background:
+        linear-gradient(to top,
+            rgba(10, 14, 22, 0.97) 0%,
+            rgba(10, 14, 22, 0.72) 45%,
+            rgba(10, 14, 22, 0.15) 100%),
+        linear-gradient(to right,
+            rgba(10, 14, 22, 0.55) 0%,
+            rgba(10, 14, 22, 0.12) 55%,
+            rgba(10, 14, 22, 0) 100%);
 }
 
 .movie-hero__content {
@@ -2053,83 +2070,235 @@ h2 {
     margin: 0 auto;
 }
 
-.movie-hero h1 {
-    margin: 0 0 .5rem;
-    font-size: clamp(1.8rem, 4vw, 3rem);
+.movie-hero__content h1 {
+    margin: 0 0 .75rem;
+    font-size: clamp(2.2rem, 5vw, 3.6rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    text-shadow: 0 2px 24px rgba(0, 0, 0, 0.55);
+    text-wrap: balance;                      /* no orphan word on the last line */
 }
 
 .movie-hero__meta {
     display: flex;
-    gap: 1rem;
     align-items: center;
-    margin: 0 0 1rem;
-    color: #cbd5e1;
+    gap: .25rem;
+    margin: 0 0 1.1rem;
+    color: #dbe3ee;
+    font-size: 1rem;
 }
 
-.movie-hero__rating { color: #facc15; font-weight: 600; }
+.movie-hero__meta span + span::before {     /* CSS-only "·" separator */
+    content: "·";
+    margin: 0 .6rem;
+    opacity: .55;
+}
+
+.movie-hero__rating {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .2rem .75rem;
+    border-radius: 999px;
+    background: rgba(250, 204, 21, 0.14);
+    border: 1px solid rgba(250, 204, 21, 0.38);
+    color: #facc15;
+    font-weight: 700;
+}
 
 .movie-hero__genres {
     display: flex;
     flex-wrap: wrap;
     gap: .5rem;
-    margin-bottom: 1.25rem;
+    margin-bottom: 1.5rem;
 }
 
 .movie-hero__chip {
     display: inline-block;
-    padding: .3rem .8rem;
+    padding: .35rem .95rem;
     border-radius: 999px;
-    background: rgba(255, 255, 255, .12);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    backdrop-filter: blur(6px);              /* frosted glass over the backdrop */
+    -webkit-backdrop-filter: blur(6px);
     font-size: .85rem;
-    color: #e2e8f0;
+    font-weight: 600;
+    letter-spacing: .02em;
+    color: #eef2f7;
 }
 
 .movie-hero__chip--muted { opacity: .6; }
 
-.movie-body {
-    max-width: 1100px;
-    margin: 2rem auto;
-    padding: 0 2rem;
-    display: grid;
-    grid-template-columns: 260px 1fr;
-    gap: 2.5rem;
+/* ── Hero CTA — gradient pill; ghost treatment for the remove form ── */
+.movie-hero__cta button,
+.movie-hero .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .85rem 1.9rem;
+    border: 0;
+    border-radius: 999px;
+    background: linear-gradient(135deg, var(--movie-accent-soft), var(--movie-accent));
+    color: #fff;
+    font-weight: 700;
+    font-size: 1rem;
+    text-decoration: none;
+    cursor: pointer;
+    box-shadow: 0 10px 26px rgba(249, 115, 22, 0.38);
+    transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
 }
 
+.movie-hero__cta button:hover,
+.movie-hero .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 32px rgba(249, 115, 22, 0.46);
+    filter: brightness(1.05);
+}
+
+.movie-hero__cta button:active { transform: translateY(0); }
+
+/* [action*="remove"] — "the action attribute contains 'remove'":
+   the remove form gets a quiet ghost pill. No JS, no extra class. */
+.movie-hero__cta[action*="remove"] button {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.32);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    box-shadow: none;
+    color: #fff;
+}
+
+.movie-hero__cta[action*="remove"] button:hover {
+    background: rgba(255, 255, 255, 0.18);
+    box-shadow: none;
+    filter: none;
+}
+
+/* ── Body grid ────────────────────────────────────────── */
+.movie-body {
+    max-width: 1100px;
+    margin: 2.5rem auto 4rem;
+    padding: 0 2rem;
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 2rem;
+    align-items: start;
+}
+
+.movie-poster { position: sticky; top: 2rem; }   /* rides along while you scroll */
+
 .movie-poster img {
+    display: block;
     width: 100%;
-    border-radius: 10px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, .45);
+    border-radius: var(--radius-lg, 16px);
+    border: 1px solid var(--color-border, #e4e6ea);
+    box-shadow: 0 18px 40px rgba(15, 17, 26, 0.16);
+    transition: transform .25s ease, box-shadow .25s ease;
+}
+
+.movie-poster img:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 24px 48px rgba(15, 17, 26, 0.22);
 }
 
 .movie-poster--empty {
     aspect-ratio: 2 / 3;
-    border-radius: 10px;
-    background: #1e293b;
+    border-radius: var(--radius-lg, 16px);
+    border: 1px dashed var(--color-border, #e4e6ea);
+    background: var(--color-surface, #fff);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #64748b;
+    color: var(--color-text-muted, #6b7280);
 }
+
+/* ── Facts panel under the poster ─────────────────────── */
+.movie-facts {
+    margin-top: 1.25rem;
+    background: var(--color-surface, #fff);
+    border: 1px solid var(--color-border, #e4e6ea);
+    border-radius: var(--radius-lg, 16px);
+    padding: 1.25rem 1.4rem;
+}
+
+.movie-facts h3 {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    margin: 0 0 .9rem;
+    font-size: .8rem;
+    font-weight: 700;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: var(--color-text, #0f111a);
+}
+
+.movie-facts h3::before {
+    content: "";
+    width: 4px;
+    height: 1.05em;
+    border-radius: 2px;
+    background: var(--movie-accent);
+}
+
+.movie-facts dl {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: .45rem 1rem;
+    margin: 0;
+    font-size: .92rem;
+}
+
+.movie-facts dt { color: var(--color-text-muted, #6b7280); font-weight: 600; }
+.movie-facts dd { margin: 0; color: var(--color-text, #0f111a); }
+
+/* ── Content cards ────────────────────────────────────── */
+.movie-section {
+    background: var(--color-surface, #fff);
+    border: 1px solid var(--color-border, #e4e6ea);
+    border-radius: var(--radius-lg, 16px);
+    padding: 1.75rem 2rem;
+    box-shadow: 0 2px 10px rgba(15, 17, 26, 0.05);
+}
+
+.movie-section + .movie-section { margin-top: 1.5rem; }
 
 .movie-section h2 {
-    font-size: 1.25rem;
-    margin: 0 0 .75rem;
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    margin: 0 0 1rem;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: var(--color-text, #0f111a);
 }
 
-.movie-section + .movie-section { margin-top: 2rem; }
+.movie-section h2::before {
+    content: "";
+    width: 4px;
+    height: 1.05em;
+    border-radius: 2px;
+    background: var(--movie-accent);
+}
 
 .movie-overview {
-    line-height: 1.7;
-    color: #cbd5e1;
     margin: 0;
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: var(--color-text-muted, #4b5563);
 }
 
 .movie-trailer {
     position: relative;
     width: 100%;
-    padding-top: 56.25%; /* 16:9 */
-    border-radius: 10px;
+    padding-top: 56.25%;                     /* 16:9, self-maintaining */
+    border-radius: 12px;
     overflow: hidden;
+    background: #0b0e14;
+    box-shadow: 0 14px 30px rgba(15, 17, 26, 0.14);
 }
 
 .movie-trailer iframe {
@@ -2140,7 +2309,10 @@ h2 {
     border: 0;
 }
 
+/* ── Mobile ───────────────────────────────────────────── */
 @media (max-width: 720px) {
-    .movie-body { grid-template-columns: 1fr; }
-    .movie-poster { max-width: 220px; }
+    .movie-hero__scrim { padding: 4.5rem 1.25rem 2.25rem; }
+    .movie-body { grid-template-columns: 1fr; gap: 1.5rem; padding: 0 1.25rem; margin: 1.5rem auto 3rem; }
+    .movie-poster { position: static; max-width: 230px; margin: 0 auto; }
+    .movie-section { padding: 1.25rem 1.4rem; }
 }

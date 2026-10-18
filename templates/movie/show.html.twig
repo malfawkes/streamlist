@@ -53,6 +53,20 @@
             {% else %}
                 <div class="movie-poster--empty">No poster available</div>
             {% endif %}
+
+            <div class="movie-facts">
+                <h3>Details</h3>
+                <dl>
+                    <dt>Release date</dt>
+                    <dd>{{ movie.releaseDate ? movie.releaseDate|date('F j, Y') : 'TBA' }}</dd>
+
+                    <dt>Rating</dt>
+                    <dd>{{ movie.rating ? '★ ' ~ movie.rating ~ ' / 10' : 'Not rated yet' }}</dd>
+
+                    <dt>Genres</dt>
+                    <dd>{{ movie.genres|length ? movie.genres|map(g => g.name)|join(', ') : 'Uncategorized' }}</dd>
+                </dl>
+            </div>
         </aside>
 
         <div class="movie-info">
