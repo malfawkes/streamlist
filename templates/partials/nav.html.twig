@@ -50,8 +50,8 @@
                             <p class="profile-dropdown-email">{{ app.user.email }}</p>
                             <p class="profile-dropdown-tier">{{ app.user.tier }} member</p>
                         </div>
-                        {% if 'ROLE_ADMIN' in app.user.roles %}
-                            <a href="{{ path('app_home') }}" class="profile-dropdown-item">⚙ Admin Panel</a>
+                        {% if is_granted('ROLE_ADMIN') %}
+                            <a href="{{ path('app_admin_dashboard') }}" class="profile-dropdown-item">Admin</a>
                         {% endif %}
                         <a href="{{ path('app_home') }}" class="profile-dropdown-item">Profile</a>
                         <a href="{{ path('app_home') }}" class="profile-dropdown-item">My Watchlist</a>

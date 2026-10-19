@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div class="adm-shell">
+    <aside class="adm-sidebar">
+        <p class="adm-sidebar__title">Admin</p>
+        <nav class="adm-sidebar__nav">
+            <a href="{{ path('app_admin_dashboard') }}">Dashboard</a>
+            {# Future pages — uncomment each as it lands:
+            <a href="{{ path('app_admin_users') }}">Users</a>
+            <a href="{{ path('app_admin_subscriptions') }}">Subscriptions</a>
+            <a href="{{ path('app_admin_movies') }}">Movies</a>
+            #}
+        </nav>
+    </aside>
+
+    <main class="adm-main">
+        {% block admin_content %}{% endblock %}
+    </main>
+</div>
+{% endblock %}
