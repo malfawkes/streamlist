@@ -2444,3 +2444,78 @@ h2 {
     .adm-sidebar { position: static; }
     .adm-sidebar__nav { flex-direction: row; flex-wrap: wrap; }
 }
+
+/* ── Genres browse page — gn- namespace ─────────────────── */
+.gn-page {
+    max-width: 1100px;
+    margin: 2.5rem auto 4rem;
+    padding: 0 2rem;
+}
+
+.gn-header h1 {
+    margin: 0 0 .35rem;
+    font-size: 1.9rem;
+    font-weight: 800;
+    color: var(--color-text, #0f111a);
+}
+
+.gn-header p {
+    margin: 0 0 1.75rem;
+    color: var(--color-text-muted, #6b7280);
+}
+
+.gn-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 1rem;
+}
+
+.gn-card {
+    display: flex;
+    flex-direction: column;
+    gap: .3rem;
+    padding: 1.1rem 1.25rem;
+    background: var(--color-surface, #fff);
+    border: 1px solid var(--color-border, #e4e6ea);
+    border-radius: var(--radius-lg, 16px);
+    text-decoration: none;
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+
+.gn-card:hover {
+    transform: translateY(-2px);
+    border-color: #0f111a;
+    box-shadow: 0 10px 24px rgba(15, 17, 26, 0.12);
+}
+
+.gn-card__name {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--color-text, #0f111a);
+}
+
+.gn-card__count {
+    font-size: .85rem;
+    color: var(--color-text-muted, #6b7280);
+}
+
+.gn-card--empty {
+    border-style: dashed;
+    opacity: .6;
+}
+
+.gn-card--empty:hover {
+    transform: none;
+    border-color: var(--color-border, #e4e6ea);
+    box-shadow: none;
+}
+
+.gn-empty {
+    grid-column: 1 / -1;
+    color: var(--color-text-muted, #6b7280);
+}
+
+@media (max-width: 720px) {
+    .gn-page { padding: 0 1.25rem; margin: 1.5rem auto 3rem; }
+    .gn-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+}

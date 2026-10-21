@@ -23,7 +23,8 @@
 
                 <div class="md-hero__genres">
                     {% for genre in movie.genres %}
-                        <span class="md-hero__chip">{{ genre.name }}</span>
+                        {# <span class="md-hero__chip">{{ genre.name }}</span> #}
+                        <a class="md-hero__chip" href="{{ path('app_movies', { genre: genre.id }) }}">{{ genre.name }}</a>
                     {% else %}
                         <span class="md-hero__chip md-hero__chip--muted">Uncategorized</span>
                     {% endfor %}

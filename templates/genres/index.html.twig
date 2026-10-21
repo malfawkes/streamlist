@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Genres — StreamList{% endblock %}
+
+{% block body %}
+<div class="gn-page">
+    <header class="gn-header">
+        <h1>Browse by Genre</h1>
+        <p>{{ genres|length }} genres — pick a lane, we'll queue the movies.</p>
+    </header>
+
+    <div class="gn-grid">
+        {% for genre in genres %}
+            <a class="gn-card{% if genre.movie_count == 0 %} gn-card--empty{% endif %}"
+               href="{{ path('app_movies', { genre: genre.id }) }}">
+                <span class="gn-card__name">{{ genre.name }}</span>
+                <span class="gn-card__count">
+                    {{ genre.movie_count }} {{ genre.movie_count == 1 ? 'title' : 'titles' }}
+                </span>
+            </a>
+        {% else %}
+            <p class="gn-empty">No genres yet.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
