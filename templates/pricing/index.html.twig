@@ -4,11 +4,6 @@
 
 {% block body %}
 <div class="pr-page">
-    <header class="pr-header">
-        <h1>Plans &amp; Pricing</h1>
-        <p>One request, one approval, done. Your watchlist cap thanks you in advance.</p>
-    </header>
-
     <div class="pr-grid">
         {% for plan in plans %}
             <article class="pr-card{% if loop.last %} pr-card--featured{% endif %}">

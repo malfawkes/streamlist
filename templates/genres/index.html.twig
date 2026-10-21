@@ -4,11 +4,6 @@
 
 {% block body %}
 <div class="gn-page">
-    <header class="gn-header">
-        <h1>Browse by Genre</h1>
-        <p>{{ genres|length }} genres — pick a lane, we'll queue the movies.</p>
-    </header>
-
     <div class="gn-grid">
         {% for genre in genres %}
             <a class="gn-card{% if genre.movie_count == 0 %} gn-card--empty{% endif %}"
