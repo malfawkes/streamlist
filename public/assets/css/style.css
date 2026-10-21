@@ -2649,3 +2649,65 @@ h2 {
 @media (max-width: 720px) {
     .pr-page { padding: 0 1.25rem; margin: 1.5rem auto 3rem; }
 }
+
+
+/* ── About page — ab- namespace ──────────────────────────── */
+.ab-page {
+    max-width: 760px;
+    margin: 2.5rem auto 4rem;
+    padding: 0 2rem;
+}
+
+.ab-header h1 {
+    margin: 0 0 .35rem;
+    font-size: 1.9rem;
+    font-weight: 800;
+    color: var(--color-text, #0f111a);
+}
+
+.ab-header p {
+    margin: 0 0 2rem;
+    color: var(--color-text-muted, #6b7280);
+}
+
+.ab-card {
+    background: var(--color-surface, #fff);
+    border: 1px solid var(--color-border, #e4e6ea);
+    border-radius: var(--radius-lg, 16px);
+    padding: 1.75rem 2rem;
+    box-shadow: 0 2px 10px rgba(15, 17, 26, 0.05);
+}
+
+.ab-card + .ab-card { margin-top: 1.25rem; }
+
+.ab-card h2 {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    margin: 0 0 .9rem;
+    font-size: .95rem;
+    font-weight: 700;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: var(--color-text, #0f111a);
+}
+
+.ab-card h2::before {
+    content: "";
+    width: 4px;
+    height: 1.05em;
+    border-radius: 2px;
+    background: var(--color-text, #0f111a);
+    flex: none;
+}
+
+.ab-card p {
+    margin: 0;
+    line-height: 1.8;
+    color: var(--color-text-muted, #4b5563);
+}
+
+@media (max-width: 720px) {
+    .ab-page { padding: 0 1.25rem; margin: 1.5rem auto 3rem; }
+    .ab-card { padding: 1.25rem 1.4rem; }
+}

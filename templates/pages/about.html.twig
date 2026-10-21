@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}About — StreamList{% endblock %}
+
+{% block body %}
+<div class="ab-page">
+    <section class="ab-card">
+        <h2>What it does</h2>
+        <p>
+            StreamList is a watchlist-first movie app. Browse a catalog seeded from
+            TMDB, filter by genre, and queue what you want to see. Free accounts hold
+            20 titles; premium lifts the cap. When you're ready for more, send an
+            upgrade request and an admin reviews it — no self-serve payment, just
+            a human in the loop.
+        </p>
+    </section>
+
+    <section class="ab-card">
+        <h2>How it's built</h2>
+        <p>
+            The application runs on Symfony with Doctrine talking to MySQL.
+            Pages are rendered server-side with Twig; authentication uses
+            Symfony's security layer with CSRF-protected forms throughout.
+            Movie data, posters, and trailers come from TMDB; cast and crew
+            are stored locally so detail pages stay fast.
+        </p>
+    </section>
+
+    <section class="ab-card">
+        <h2>Found a problem?</h2>
+        <p>
+            Bugs and movie suggestions are welcome through the contact page —
+            messages land straight in the admin inbox. (That page is coming
+            back to this app soon.)
+        </p>
+    </section>
+</div>
+{% endblock %}
