@@ -10,7 +10,7 @@
         <nav class="nav-links">
             <a href="/movies">Trending</a>
             <a href="/genres">Genres</a>
-            <a href="/upgrade">Pricing</a>
+            <a href="/pricing">Pricing</a>
             <a href="/about">About</a>
         </nav>
 
@@ -28,7 +28,7 @@
                 {% if app.user.tier == 'premium' %}
                     <span class="plus-badge">★ PLUS</span>
                 {% else %}
-                    <a href="{{ path('app_home') }}" class="upgrade-link">Upgrade</a>
+                    <a href="{{ path('app_pricing') }}" class="upgrade-link">Upgrade</a>
                 {% endif %}
 
                 <div class="profile-menu">
