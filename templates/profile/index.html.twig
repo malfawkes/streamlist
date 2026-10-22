@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Profile — StreamList{% endblock %}
+
+{% block body %}
+<div class="pf-page">
+    <div class="pf-grid">
+        <aside class="pf-avatar">
+            {% if app.user.avatarPath %}
+                <img src="{{ asset(app.user.avatarPath) }}" alt="Your avatar">
+            {% else %}
+                <div class="pf-avatar--empty">{{ app.user.name|slice(0, 1)|upper }}</div>
+            {% endif %}
+            <p class="pf-avatar__hint">PNG, JPG or WebP — max 2 MB</p>
+        </aside>
+
+        <section class="pf-card">
+            {{ form_start(profileForm) }}
+                {{ form_errors(profileForm) }}
+
+                <div class="pf-field">
+                    {{ form_label(profileForm.name) }}
+                    {{ form_widget(profileForm.name) }}
+                    {{ form_errors(profileForm.name) }}
+                </div>
+
+                <div class="pf-field">
+                    {{ form_label(profileForm.avatar) }}
+                    {{ form_widget(profileForm.avatar) }}
+                    {{ form_errors(profileForm.avatar) }}
+                </div>
+
+                {# <button type="submit" class="pf-btn">Save changes</button> #}
+            {{ form_end(profileForm) }}
+        </section>
+    </div>
+</div>
+{% endblock %}

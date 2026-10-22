@@ -41,6 +41,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(name: 'tier_expires_at', type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTime $tierExpiresAt = null;
 
+    #[ORM\Column(name: 'avatar_path', nullable: true)]
+    private ?string $avatarPath = null;
+
     public function __construct()
     {
         $this->isAdmin = false;        // every new user starts non-admin
@@ -149,5 +152,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function eraseCredentials(): void
     {
         // If you store any temporary, sensitive data on the user, clear it here
+    }
+
+    public function getAvatarPath(): ?string
+    {
+        return $this->avatarPath;
+    }
+
+    public function setAvatarPath(?string $avatarPath): self
+    {
+        $this->avatarPath = $avatarPath;
+
+        return $this;
     }
 }

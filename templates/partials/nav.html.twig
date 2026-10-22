@@ -53,9 +53,9 @@
                         {% if is_granted('ROLE_ADMIN') %}
                             <a href="{{ path('app_admin_dashboard') }}" class="profile-dropdown-item">Admin</a>
                         {% endif %}
-                        <a href="{{ path('app_home') }}" class="profile-dropdown-item">Profile</a>
-                        <a href="{{ path('app_home') }}" class="profile-dropdown-item">My Watchlist</a>
-                        <a href="{{ path('app_home') }}" class="profile-dropdown-item">Subscription</a>
+                        <a href="{{ path('app_profile') }}" class="profile-dropdown-item">Profile</a>
+                        <a href="{{ path('app_watchlist') }}" class="profile-dropdown-item">My Watchlist</a>
+                        <a href="{{ path('app_pricing') }}" class="profile-dropdown-item">Subscription</a>
                         <a href="{{ path('app_logout') }}" class="profile-dropdown-item profile-dropdown-logout">Log Out</a>
                     </div>
                 </div>
