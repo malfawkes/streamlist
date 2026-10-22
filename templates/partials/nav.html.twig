@@ -15,9 +15,9 @@
         </nav>
 
         {% if app.user %}
-            <form method="get" action="/search" class="nav-search">
-                <input type="text" name="q" placeholder="Search movies…" >
-                       {# value="<?= htmlspecialchars($_GET['q'] ?? '') ?>"> #}
+            <form class="nav-search" method="get" action="{{ path('app_search') }}">
+                <input type="search" name="q" placeholder="Search movies..." required
+                    value="{{ app.request.query.get('q') }}">
                 <button type="submit">Go</button>
             </form>
         {% endif %}

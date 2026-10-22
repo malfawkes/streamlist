@@ -2827,3 +2827,42 @@ h2 {
     .pf-grid { grid-template-columns: 1fr; }
     .pf-avatar img, .pf-avatar--empty { width: 120px; height: 120px; }
 }
+
+/* ── Search results — se- namespace ──────────────────────── */
+.se-page {
+    max-width: 1100px;
+    margin: 2.5rem auto 4rem;
+    padding: 0 2rem;
+}
+
+.se-header h1 {
+    margin: 0 0 .35rem;
+    font-size: 1.7rem;
+    font-weight: 800;
+    color: var(--color-text, #0f111a);
+}
+
+.se-header p {
+    margin: 0 0 1.75rem;
+    color: var(--color-text-muted, #6b7280);
+}
+
+.se-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1.25rem;
+}
+
+.se-empty {
+    grid-column: 1 / -1;
+    padding: 2.5rem;
+    text-align: center;
+    background: var(--color-surface, #fff);
+    border: 1px dashed var(--color-border, #e4e6ea);
+    border-radius: var(--radius-lg, 16px);
+    color: var(--color-text-muted, #6b7280);
+}
+
+@media (max-width: 720px) {
+    .se-page { padding: 0 1.25rem; margin: 1.5rem auto 3rem; }
+}

@@ -95,4 +95,24 @@ class MovieRepository extends ServiceEntityRepository
 
         return (int) $qb->getQuery()->getSingleScalarResult();
     }
+
+    /**
+     * Title search. The bound parameter is the entire SQL-injection
+     * defense — the Phase 1 PDO doctrine, unchanged in DQL.
+     * % and _ are escaped so user input can't act as SQL wildcards.
+     */
+    public function searchByTitle(string $query, int $limit = 24): array
+    {
+        // 'LIKE' treats % and _ as commands; strip them of their powers.
+        // MySQL's LIKE is case-insensitive by default — no LOWER() needed.
+        $escaped = addcslashes($query, '%_\\');
+
+        return $this->createQueryBuilder('m')
+            ->andWhere('m.title LIKE :term')
+            ->setParameter('term', '%' . $escaped . '%')
+            ->orderBy('m.releaseDate', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
 }

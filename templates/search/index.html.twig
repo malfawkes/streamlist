@@ -1,0 +1,17 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Search: {{ q }} — StreamList{% endblock %}
+
+{% block body %}
+<div class="se-page">
+    <div class="se-grid">
+        {% for movie in results %}
+            {{ include('partials/movie_card.html.twig') }}
+        {% else %}
+            <p class="se-empty">
+                Nothing matched “{{ q }}”. Check the spelling, or try a shorter word.
+            </p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
