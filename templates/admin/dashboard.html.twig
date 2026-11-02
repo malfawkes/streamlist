@@ -7,6 +7,7 @@
     <div class="adm-stat">
         <span class="adm-stat__label">Users</span>
         <span class="adm-stat__value">{{ stats.users }}</span>
+        <span class="adm-stat__sub">{{ stats.tier_summary }}</span>
     </div>
 
     <div class="adm-stat">
@@ -24,9 +25,92 @@
         <span class="adm-stat__value">{{ stats.watchlist_adds }}</span>
     </div>
 
+    <div class="adm-stat">
+        <span class="adm-stat__label">Contact messages</span>
+        <span class="adm-stat__value">{{ stats.contact_messages }}</span>
+    </div>
+
     <div class="adm-stat{% if stats.pending_subscriptions > 0 %} adm-stat--attention{% endif %}">
         <span class="adm-stat__label">Pending upgrades</span>
         <span class="adm-stat__value">{{ stats.pending_subscriptions }}</span>
+    </div>
+</div>
+
+<div class="adm-panels">
+    <section class="adm-panel" id="pending">
+        <h2>Pending upgrade requests</h2>
+
+        {% if pending_requests|length %}
+            <div class="adm-table-wrap">
+                <table class="adm-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Plan</th>
+                            <th>Requested</th>
+                            <th class="adm-table__actions"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in pending_requests %}
+                            <tr>
+                                <td>
+                                    {{ r.user_name ?: r.user_email }}
+                                    <span class="adm-muted">{{ r.user_email }}</span>
+                                </td>
+                                <td>{{ r.plan_name }}</td>
+                                <td>{{ r.requested_at ? r.requested_at|date('M j, g:i a') : '—' }}</td>
+                                <td class="adm-table__actions">
+                                    {# Forms inside <td> are valid HTML — a form may not wrap <tr>,
+                                       but it lives happily inside a cell. #}
+                                    <form method="post" action="{{ path('app_admin_subscription_approve', {id: r.id}) }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('admin_sub_approve_' ~ r.id) }}">
+                                        <button type="submit" class="adm-btn adm-btn--approve">Approve</button>
+                                    </form>
+                                    <form method="post" action="{{ path('app_admin_subscription_reject', {id: r.id}) }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('admin_sub_reject_' ~ r.id) }}">
+                                        <button type="submit" class="adm-btn adm-btn--reject">Reject</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="adm-panel__empty">Nothing waiting on you — the queue is clear.</p>
+        {% endif %}
+    </section>
+
+    <div class="adm-panels__side">
+        <section class="adm-panel">
+            <h2>Recent signups</h2>
+            <ul class="adm-list">
+                {% for u in recent_users %}
+                    <li>
+                        <span class="adm-list__name">{{ u.name ?: u.email }}</span>
+                        <span class="adm-muted">{{ u.email }}</span>
+                        <span class="adm-badge{% if u.tier == 'premium' %} adm-badge--premium{% endif %}">{{ u.tier }}</span>
+                    </li>
+                {% else %}
+                    <li class="adm-muted">No users yet.</li>
+                {% endfor %}
+            </ul>
+        </section>
+
+        <section class="adm-panel">
+            <h2>Most watchlisted</h2>
+            <ul class="adm-list">
+                {% for m in top_movies %}
+                    <li>
+                        <a class="adm-list__name" href="{{ path('app_movie_show', {id: m.id}) }}">{{ m.title }}</a>
+                        <span class="adm-badge">{{ m.adds }} adds</span>
+                    </li>
+                {% else %}
+                    <li class="adm-muted">No watchlist activity yet.</li>
+                {% endfor %}
+            </ul>
+        </section>
     </div>
 </div>
 {% endblock %}
