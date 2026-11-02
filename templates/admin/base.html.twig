@@ -1,21 +1,35 @@
 {% extends 'base.html.twig' %}
 
+{% block title %}Admin — StreamList{% endblock %}
+
 {% block body %}
 <div class="adm-shell">
-    <aside class="adm-sidebar">
-        <p class="adm-sidebar__title">Admin</p>
-        <nav class="adm-sidebar__nav">
-            <a href="{{ path('app_admin_dashboard') }}">Dashboard</a>
-            {# Future pages — uncomment each as it lands:
-            <a href="{{ path('app_admin_users') }}">Users</a>
-            <a href="{{ path('app_admin_subscriptions') }}">Subscriptions</a>
-            <a href="{{ path('app_admin_movies') }}">Movies</a>
-            #}
+    <aside class="adm-side">
+        <div class="adm-side__brand">StreamList <span style="opacity:.5">/ admin</span></div>
+        <nav>
+            <a class="adm-side__link {{ app.request.attributes.get('_route') == 'app_admin_dashboard' ? 'is-active' }}" href="{{ path('app_admin_dashboard') }}">Dashboard</a>
+            <a class="adm-side__link {{ app.request.attributes.get('_route') == 'app_admin_users' ? 'is-active' }}" href="{{ path('app_admin_users') }}">Users</a>
+            <a class="adm-side__link {{ app.request.attributes.get('_route') starts with 'app_admin_movie' ? 'is-active' }}" href="{{ path('app_admin_movies') }}">Movies</a>
         </nav>
+        <a class="adm-side__site" href="/">&larr; View site</a>
     </aside>
-
     <main class="adm-main">
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="adm-flash adm-flash--{{ label }}">{{ message }}</div>
+            {% endfor %}
+        {% endfor %}
         {% block admin_content %}{% endblock %}
     </main>
 </div>
+
+<script>
+    document.querySelectorAll('form[data-confirm]').forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            if (!window.confirm(form.dataset.confirm)) {
+                event.preventDefault();
+            }
+        });
+    });
+</script>
 {% endblock %}

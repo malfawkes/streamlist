@@ -1,116 +1,95 @@
 {% extends 'admin/base.html.twig' %}
 
-{% block title %}Admin — StreamList{% endblock %}
-
 {% block admin_content %}
+
 <div class="adm-stats">
+    <a class="adm-stat" href="{{ path('app_admin_users') }}">
+        <div class="adm-stat__num">{{ stats.users }}</div>
+        <div class="adm-stat__label">Users</div>
+    </a>
+    <a class="adm-stat" href="{{ path('app_admin_movies') }}">
+        <div class="adm-stat__num">{{ stats.movies }}</div>
+        <div class="adm-stat__label">Movies</div>
+    </a>
     <div class="adm-stat">
-        <span class="adm-stat__label">Users</span>
-        <span class="adm-stat__value">{{ stats.users }}</span>
-        <span class="adm-stat__sub">{{ stats.tier_summary }}</span>
+        <div class="adm-stat__num">{{ stats.genres }}</div>
+        <div class="adm-stat__label">Genres</div>
     </div>
-
     <div class="adm-stat">
-        <span class="adm-stat__label">Movies</span>
-        <span class="adm-stat__value">{{ stats.movies }}</span>
+        <div class="adm-stat__num">{{ stats.watchlist }}</div>
+        <div class="adm-stat__label">Watchlist adds</div>
     </div>
-
-    <div class="adm-stat">
-        <span class="adm-stat__label">Genres</span>
-        <span class="adm-stat__value">{{ stats.genres }}</span>
-    </div>
-
-    <div class="adm-stat">
-        <span class="adm-stat__label">Watchlist adds</span>
-        <span class="adm-stat__value">{{ stats.watchlist_adds }}</span>
-    </div>
-
-    <div class="adm-stat">
-        <span class="adm-stat__label">Contact messages</span>
-        <span class="adm-stat__value">{{ stats.contact_messages }}</span>
-    </div>
-
-    <div class="adm-stat{% if stats.pending_subscriptions > 0 %} adm-stat--attention{% endif %}">
-        <span class="adm-stat__label">Pending upgrades</span>
-        <span class="adm-stat__value">{{ stats.pending_subscriptions }}</span>
-    </div>
+    <a class="adm-stat{{ stats.pending > 0 ? ' adm-stat--attention' }}" href="#adm-pending">
+        <div class="adm-stat__num">{{ stats.pending }}</div>
+        <div class="adm-stat__label">Pending requests</div>
+    </a>
 </div>
 
-<div class="adm-panels">
-    <section class="adm-panel" id="pending">
+<div class="adm-grid2">
+    <section class="adm-panel" id="adm-pending">
         <h2>Pending upgrade requests</h2>
-
-        {% if pending_requests|length %}
-            <div class="adm-table-wrap">
-                <table class="adm-table">
-                    <thead>
-                        <tr>
-                            <th>User</th>
-                            <th>Plan</th>
-                            <th>Requested</th>
-                            <th class="adm-table__actions"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for r in pending_requests %}
-                            <tr>
-                                <td>
-                                    {{ r.user_name ?: r.user_email }}
-                                    <span class="adm-muted">{{ r.user_email }}</span>
-                                </td>
-                                <td>{{ r.plan_name }}</td>
-                                <td>{{ r.requested_at ? r.requested_at|date('M j, g:i a') : '—' }}</td>
-                                <td class="adm-table__actions">
-                                    {# Forms inside <td> are valid HTML — a form may not wrap <tr>,
-                                       but it lives happily inside a cell. #}
-                                    <form method="post" action="{{ path('app_admin_subscription_approve', {id: r.id}) }}">
-                                        <input type="hidden" name="_token" value="{{ csrf_token('admin_sub_approve_' ~ r.id) }}">
-                                        <button type="submit" class="adm-btn adm-btn--approve">Approve</button>
-                                    </form>
-                                    <form method="post" action="{{ path('app_admin_subscription_reject', {id: r.id}) }}">
-                                        <input type="hidden" name="_token" value="{{ csrf_token('admin_sub_reject_' ~ r.id) }}">
-                                        <button type="submit" class="adm-btn adm-btn--reject">Reject</button>
-                                    </form>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+        {% if pending_rows %}
+        <table class="adm-table">
+            <thead><tr><th>User</th><th>Plan</th><th style="text-align:right">Decision</th></tr></thead>
+            <tbody>
+            {% for row in pending_rows %}
+                <tr>
+                    <td>{{ row.user_name }}</td>
+                    <td>{{ row.plan_name }}</td>
+                    <td>
+                        <div class="adm-inline" style="justify-content:flex-end">
+                            <form method="post" action="{{ path('app_admin_pending_approve', {id: row.id}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('sub_approve_' ~ row.id) }}">
+                                <button class="adm-btn adm-btn--solid">Approve</button>
+                            </form>
+                            <form method="post" action="{{ path('app_admin_pending_reject', {id: row.id}) }}">
+                                <input type="hidden" name="_token" value="{{ csrf_token('sub_reject_' ~ row.id) }}">
+                                <button class="adm-btn adm-btn--danger">Reject</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
         {% else %}
-            <p class="adm-panel__empty">Nothing waiting on you — the queue is clear.</p>
+            <p class="adm-empty">Nothing pending. Inbox zero.</p>
         {% endif %}
     </section>
 
-    <div class="adm-panels__side">
-        <section class="adm-panel">
-            <h2>Recent signups</h2>
-            <ul class="adm-list">
-                {% for u in recent_users %}
-                    <li>
-                        <span class="adm-list__name">{{ u.name ?: u.email }}</span>
-                        <span class="adm-muted">{{ u.email }}</span>
-                        <span class="adm-badge{% if u.tier == 'premium' %} adm-badge--premium{% endif %}">{{ u.tier }}</span>
-                    </li>
-                {% else %}
-                    <li class="adm-muted">No users yet.</li>
-                {% endfor %}
-            </ul>
-        </section>
-
-        <section class="adm-panel">
-            <h2>Most watchlisted</h2>
-            <ul class="adm-list">
-                {% for m in top_movies %}
-                    <li>
-                        <a class="adm-list__name" href="{{ path('app_movie_show', {id: m.id}) }}">{{ m.title }}</a>
-                        <span class="adm-badge">{{ m.adds }} adds</span>
-                    </li>
-                {% else %}
-                    <li class="adm-muted">No watchlist activity yet.</li>
-                {% endfor %}
-            </ul>
-        </section>
-    </div>
+    <section class="adm-panel">
+        <h2>Newest users</h2>
+        {% if recent_users %}
+        <ul class="adm-list">
+            {% for u in recent_users %}
+                <li><span>{{ u.name ?? u.email }}</span><span class="adm-muted">{{ u.email }}</span></li>
+            {% endfor %}
+        </ul>
+        <p class="adm-muted" style="margin:10px 0 0">
+            <a class="adm-link" href="{{ path('app_admin_users') }}">Manage users &rarr;</a>
+        </p>
+        {% else %}
+            <p class="adm-empty">No users yet.</p>
+        {% endif %}
+    </section>
 </div>
+
+<section class="adm-panel">
+    <h2>Latest watchlist adds</h2>
+    {% if recent_adds %}
+    <table class="adm-table">
+        <thead><tr><th>User</th><th>Added</th></tr></thead>
+        <tbody>
+        {% for add in recent_adds %}
+            <tr>
+                <td>{{ add.uname }}</td>
+                <td><a class="adm-link" href="{{ path('app_movie_show', {id: add.mid}) }}">{{ add.mtitle }}</a></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p class="adm-empty">No watchlist activity yet.</p>
+    {% endif %}
+</section>
 {% endblock %}

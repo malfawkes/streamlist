@@ -1,0 +1,75 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block admin_content %}
+<header class="adm-head">
+    <h1>{{ movie ? 'Edit movie' : 'Add a movie' }}</h1>
+    {% if movie %}
+        <a class="adm-btn" href="{{ path('app_movie_show', {id: movie.id}) }}">View page</a>
+    {% endif %}
+</header>
+
+<div class="adm-panel">
+    {% if errors %}
+        <div class="adm-form__err">
+            {% for e in errors %}<div>{{ e }}</div>{% endfor %}
+        </div>
+    {% endif %}
+
+    <form method="post" class="adm-form"
+          action="{{ movie ? path('app_admin_movie_edit', {id: movie.id}) : path('app_admin_movie_new') }}">
+        <label for="title">Title *</label>
+        <input type="text" id="title" name="title" value="{{ old.title ?? (movie ? movie.title : '') }}" required>
+
+        <label for="tmdb_id">TMDB ID</label>
+        <input type="number" id="tmdb_id" name="tmdb_id" placeholder="optional — auto-filled if left blank"
+               value="{{ old.tmdb_id ?? (movie ? movie.tmdbId : '') }}">
+
+        <label for="release_date">Release date</label>
+        <input type="date" id="release_date" name="release_date"
+               value="{{ old.release_date ?? (movie and movie.releaseDate ? movie.releaseDate|date('Y-m-d') : '') }}">
+
+        <label for="rating">Rating (0–10)</label>
+        <input type="number" id="rating" name="rating" step="0.1" min="0" max="10" placeholder="7.5"
+               value="{{ old.rating ?? (movie and movie.rating is not null ? movie.rating : '') }}">
+
+        <label>Access</label>
+        <div class="adm-checks">
+            {% set premium_checked = old is not empty ? (old.is_premium ?? '') == '1' : (movie ? movie.isPremium : false) %}
+            <label>
+                <input type="checkbox" name="is_premium" value="1" {% if premium_checked %}checked{% endif %}>
+                Premium only
+            </label>
+        </div>
+
+        <label for="poster_path">Poster path</label>
+        <input type="text" id="poster_path" name="poster_path" placeholder="/abc123.jpg or a full https:// URL"
+               value="{{ old.poster_path ?? (movie ? movie.posterPath : '') }}">
+
+        <label for="backdrop_path">Backdrop path</label>
+        <input type="text" id="backdrop_path" name="backdrop_path" placeholder="/xyz789.jpg or a full https:// URL"
+               value="{{ old.backdrop_path ?? (movie ? movie.backdropPath : '') }}">
+
+        <label for="trailer_key">Trailer key (YouTube ID)</label>
+        <input type="text" id="trailer_key" name="trailer_key" placeholder="e.g. dQw4w9WgXcQ"
+               value="{{ old.trailer_key ?? (movie ? movie.trailerKey : '') }}">
+
+        <label for="overview">Overview</label>
+        <textarea id="overview" name="overview">{{ old.overview ?? (movie ? movie.overview : '') }}</textarea>
+
+        <label>Genres</label>
+        <div class="adm-checks">
+            {% for g in genres %}
+                <label>
+                    <input type="checkbox" name="genres[]" value="{{ g.id }}" {% if g.id in selected %}checked{% endif %}>
+                    {{ g.name }}
+                </label>
+            {% endfor %}
+        </div>
+
+        <div class="adm-form__actions">
+            <button class="adm-btn adm-btn--solid">{{ movie ? 'Save changes' : 'Add movie' }}</button>
+            <a class="adm-btn" href="{{ path('app_admin_movies') }}">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

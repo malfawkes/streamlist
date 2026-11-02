@@ -4,40 +4,39 @@
 
 {% block body %}
 <div class="pr-page">
+
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="pr-flash pr-flash--{{ label }}">{{ message }}</div>
+        {% endfor %}
+    {% endfor %}
+
+    {% if plans %}
     <div class="pr-grid">
         {% for plan in plans %}
-            <article class="pr-card{% if loop.last %} pr-card--featured{% endif %}">
-                <h2 class="pr-card__name">{{ plan.name }}</h2>
-
-                <p class="pr-card__price">
-                    {{ plan.price }}
-                    {% if plan.durationDays %}
-                        <span class="pr-card__per">/ {{ plan.durationDays }} days</span>
-                    {% endif %}
-                </p>
-
-                {% if plan.description %}
-                    <p class="pr-card__desc">{{ plan.description }}</p>
+        <article class="pr-card{{ plan.id == active_plan_id ? ' pr-card--current' }}">
+            <div class="pr-card__name">{{ plan.name }}</div>
+            <div class="pr-card__price">
+                {% if plan.price %}${{ plan.price }}<span>/mo</span>{% else %}Talk to us{% endif %}
+            </div>
+            {% if plan.duration %}<div class="pr-card__dur">{{ plan.duration }}</div>{% endif %}
+            <p class="pr-card__desc">{{ plan.description ?? 'The full catalogue, the way you like it.' }}</p>
+            <div class="pr-card__action">
+                {% if not app.user %}
+                    <a class="pr-btn" href="{{ path('app_login') }}">Log in to upgrade</a>
+                {% elseif pending %}
+                    <span class="pr-btn pr-btn--muted">Pending approval…</span>
+                {% elseif plan.id == active_plan_id %}
+                    <span class="pr-card__current">Current plan</span>
+                {% else %}
+                    <a class="pr-btn" href="{{ path('app_pricing_upgrade', {id: plan.id}) }}">Upgrade</a>
                 {% endif %}
-
-                <div class="pr-card__cta">
-                    {% if not app.user %}
-                        <a href="{{ path('app_login') }}" class="pr-card__btn">Log in to upgrade</a>
-                    {% elseif pending_plan_id == plan.id %}
-                        <span class="pr-card__pending">Pending approval</span>
-                    {% else %}
-                        <form method="post"
-                              action="{{ path('app_upgrade_request', {id: plan.id}) }}">
-                            <input type="hidden" name="_token"
-                                   value="{{ csrf_token('upgrade_' ~ plan.id) }}">
-                            <button type="submit" class="pr-card__btn">Upgrade</button>
-                        </form>
-                    {% endif %}
-                </div>
-            </article>
-        {% else %}
-            <p class="pr-empty">No plans configured yet.</p>
+            </div>
+        </article>
         {% endfor %}
     </div>
+    {% else %}
+        <p class="pr-sub">No plans configured yet.</p>
+    {% endif %}
 </div>
 {% endblock %}

@@ -1,0 +1,50 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Checkout — StreamList{% endblock %}
+
+{% block body %}
+<div class="pr-pay">
+    <a class="pr-pay__back" href="{{ path('app_pricing') }}">&larr; Back to plans</a>
+
+    <div class="pr-pay__card">
+        <h1>Checkout</h1>
+
+        <div class="pr-pay__plan">
+            <span>{{ plan.name }}</span>
+            <strong>{{ plan.price ? '$' ~ plan.price ~ '/mo' : '' }}</strong>
+        </div>
+
+        {% for e in errors %}
+            <div class="pr-pay__err">{{ e }}</div>
+        {% endfor %}
+
+        <form method="post" action="{{ path('app_pricing_process', {id: plan.id}) }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('upgrade_' ~ plan.id) }}">
+
+            <label for="card_name">Cardholder name</label>
+            <input type="text" id="card_name" name="card_name" value="{{ old.card_name ?? '' }}" autocomplete="cc-name">
+
+            <label for="card_number">Card number</label>
+            <input type="text" id="card_number" name="card_number" inputmode="numeric"
+                   placeholder="4242 4242 4242 4242" value="{{ old.card_number ?? '' }}" autocomplete="cc-number">
+
+            <div class="pr-pay__row">
+                <div>
+                    <label for="card_expiry">Expiry</label>
+                    <input type="text" id="card_expiry" name="card_expiry" placeholder="MM/YY"
+                           value="{{ old.card_expiry ?? '' }}" autocomplete="cc-exp">
+                </div>
+                <div>
+                    <label for="card_cvc">CVC</label>
+                    <input type="text" id="card_cvc" name="card_cvc" inputmode="numeric" placeholder="123"
+                           value="{{ old.card_cvc ?? '' }}" autocomplete="cc-csc">
+                </div>
+            </div>
+
+            <button class="pr-pay__btn" type="submit">Pay &amp; request upgrade</button>
+        </form>
+
+        <p class="pr-pay__note">Demo checkout — nothing is charged and card details are never stored.</p>
+    </div>
+</div>
+{% endblock %}

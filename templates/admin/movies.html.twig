@@ -1,0 +1,47 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block admin_content %}
+<header class="adm-head">
+    <h1>Movies</h1>
+    <a class="adm-btn adm-btn--solid" href="{{ path('app_admin_movie_new') }}">+ Add movie</a>
+</header>
+
+<div class="adm-panel">
+    <table class="adm-table">
+        <thead>
+        <tr><th></th><th>Title</th><th>Released</th><th>Genres</th><th>Rating</th><th style="text-align:right">Actions</th></tr>
+        </thead>
+        <tbody>
+        {% for movie in movies %}
+            <tr>
+                <td>
+                    {% if movie.posterPath %}
+                        <img class="adm-thumb" src="{{ movie.posterPath starts with 'http' ? movie.posterPath : 'https://image.tmdb.org/t/p/w92' ~ movie.posterPath }}" alt="">
+                    {% endif %}
+                </td>
+                <td><a class="adm-link" href="{{ path('app_movie_show', {id: movie.id}) }}">{{ movie.title }}</a></td>
+                <td>{{ movie.releaseDate ? movie.releaseDate|date('Y') : '—' }}</td>
+                <td>
+                    {% for g in movie.genres %}
+                        <span class="adm-chip">{{ g.name }}</span>
+                    {% endfor %}
+                </td>
+                <td>{{ movie.rating is not null ? movie.rating ~ '/10' : '—' }}</td>
+                <td>
+                    <div class="adm-inline" style="justify-content:flex-end">
+                        <a class="adm-btn" href="{{ path('app_admin_movie_edit', {id: movie.id}) }}">Edit</a>
+                        <form method="post" action="{{ path('app_admin_movie_delete', {id: movie.id}) }}"
+                              data-confirm="Delete &quot;{{ movie.title }}&quot;? Credits, genres and watchlist entries go too.">
+                            <input type="hidden" name="_token" value="{{ csrf_token('del_movie_' ~ movie.id) }}">
+                            <button class="adm-btn adm-btn--danger">Delete</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+        {% else %}
+            <tr><td colspan="6"><p class="adm-empty">No movies yet — add the first one.</p></td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

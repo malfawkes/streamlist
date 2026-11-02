@@ -1,0 +1,63 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block admin_content %}
+<header class="adm-head">
+    <h1>Users</h1>
+    <p class="adm-head__sub">Remove accounts or set a plan directly — no request needed.</p>
+</header>
+
+<div class="adm-panel">
+    <table class="adm-table">
+        <thead>
+        <tr><th>User</th><th>Plan</th><th>Status</th><th>Set plan</th><th></th></tr>
+        </thead>
+        <tbody>
+        {% for u in users %}
+            <tr>
+                <td>
+                    <strong>{{ u.name ?? u.email }}</strong>
+                    <div class="adm-muted">{{ u.email }}</div>
+                </td>
+                <td>
+                    {% if active_map[u.id] is defined and plans[active_map[u.id]] is defined %}
+                        {{ plans[active_map[u.id]].name }}
+                    {% else %}
+                        <span class="adm-muted">—</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if pending_ids[u.id] is defined %}
+                        <span class="adm-badge adm-badge--amber">pending</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <form method="post" action="{{ path('app_admin_user_setplan', {id: u.id}) }}" class="adm-inline">
+                        <input type="hidden" name="_token" value="{{ csrf_token('plan_user_' ~ u.id) }}">
+                        <select name="plan_id" class="adm-select">
+                            <option value="">— none —</option>
+                            {% for p in plans %}
+                                <option value="{{ p.id }}" {% if active_map[u.id] is defined and active_map[u.id] == p.id %}selected{% endif %}>{{ p.name }} — ${{ p.price }}/mo</option>
+                            {% endfor %}
+                        </select>
+                        <button class="adm-btn">Set</button>
+                    </form>
+                </td>
+                <td style="text-align:right">
+                    {% if app.user and app.user.id != u.id %}
+                        <form method="post" action="{{ path('app_admin_user_delete', {id: u.id}) }}"
+                              data-confirm="Delete {{ u.name ?? u.email }}? Their watchlist and requests go with them.">
+                            <input type="hidden" name="_token" value="{{ csrf_token('del_user_' ~ u.id) }}">
+                            <button class="adm-btn adm-btn--danger">Delete</button>
+                        </form>
+                    {% else %}
+                        <span class="adm-muted">that's you</span>
+                    {% endif %}
+                </td>
+            </tr>
+        {% else %}
+            <tr><td colspan="5"><p class="adm-empty">No users yet.</p></td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
