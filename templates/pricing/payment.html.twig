@@ -22,22 +22,26 @@
             <input type="hidden" name="_token" value="{{ csrf_token('upgrade_' ~ plan.id) }}">
 
             <label for="card_name">Cardholder name</label>
-            <input type="text" id="card_name" name="card_name" value="{{ old.card_name ?? '' }}" autocomplete="cc-name">
+            <input type="text" id="card_name" name="card_name" required
+                   value="{{ old.card_name ?? '' }}" autocomplete="cc-name">
 
             <label for="card_number">Card number</label>
-            <input type="text" id="card_number" name="card_number" inputmode="numeric"
+            <input type="text" id="card_number" name="card_number" inputmode="numeric" required
+                   pattern="[0-9 ]{12,23}" title="Digits and spaces only, e.g. 4242 4242 4242 4242"
                    placeholder="4242 4242 4242 4242" value="{{ old.card_number ?? '' }}" autocomplete="cc-number">
 
             <div class="pr-pay__row">
                 <div>
                     <label for="card_expiry">Expiry</label>
-                    <input type="text" id="card_expiry" name="card_expiry" placeholder="MM/YY"
-                           value="{{ old.card_expiry ?? '' }}" autocomplete="cc-exp">
+                    <input type="text" id="card_expiry" name="card_expiry" required
+                           pattern="(0[1-9]|1[0-2])/[0-9]{2}" title="Month and year as MM/YY, e.g. 12/28"
+                           placeholder="MM/YY" value="{{ old.card_expiry ?? '' }}" autocomplete="cc-exp">
                 </div>
                 <div>
                     <label for="card_cvc">CVC</label>
-                    <input type="text" id="card_cvc" name="card_cvc" inputmode="numeric" placeholder="123"
-                           value="{{ old.card_cvc ?? '' }}" autocomplete="cc-csc">
+                    <input type="text" id="card_cvc" name="card_cvc" inputmode="numeric" required
+                           pattern="[0-9]{3,4}" title="3 or 4 digits, e.g. 123"
+                           placeholder="123" value="{{ old.card_cvc ?? '' }}" autocomplete="cc-csc">
                 </div>
             </div>
 

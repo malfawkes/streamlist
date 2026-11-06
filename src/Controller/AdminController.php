@@ -9,21 +9,18 @@ use App\Entity\User;
 use App\Entity\WatchlistItem;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Doctrine\ORM\EntityRepository;
-
 
 #[IsGranted('ROLE_ADMIN')]
 #[Route('/admin', name: 'app_admin_')]
 class AdminController extends AbstractController
 {
-    // -- plans / subscription-table candidates (duplicated from PricingController on purpose,
-    //    so each controller stands alone and you never paste half a puzzle) --
     private const PLAN_TABLES   = ['plans', 'plan', 'memberships', 'tiers'];
     private const NAME_COLS     = ['name', 'plan_name', 'title', 'label'];
     private const PRICE_COLS    = ['price', 'amount', 'monthly_price', 'cost', 'fee'];
@@ -35,9 +32,11 @@ class AdminController extends AbstractController
 
     // ================================================================ dashboard
 
-        #[Route('', name: 'dashboard', methods: ['GET'])]
+    #[Route('', name: 'dashboard', methods: ['GET'])]
     public function dashboard(ManagerRegistry $doctrine, Connection $conn): Response
     {
+        $em = $this->em($doctrine);
+
         $recentAdds = $this->repo($doctrine, WatchlistItem::class)->createQueryBuilder('w')
             ->select('w.id AS wid, u.id AS uid, u.name AS uname, m.id AS mid, m.title AS mtitle')
             ->join('w.user', 'u')
@@ -55,7 +54,7 @@ class AdminController extends AbstractController
                 'watchlist' => $this->repo($doctrine, WatchlistItem::class)->count([]),
                 'pending'   => $this->pendingCount($conn),
             ],
-            'pending_rows' => $this->pendingRows($conn, $doctrine->getManager()),
+            'pending_rows' => $this->pendingRows($conn, $em),
             'recent_users' => $this->repo($doctrine, User::class)->findBy([], ['id' => 'DESC'], 5),
             'recent_adds'  => $recentAdds,
         ]);
@@ -70,11 +69,11 @@ class AdminController extends AbstractController
 
         $plans = [];
         foreach ($this->allPlans($conn) as $p) {
-            $plans[$p['id']] = $p; // keyed by id so the template can look plans up directly
+            $plans[$p['id']] = $p;
         }
 
         return $this->render('admin/users.html.twig', [
-            'users'       => $doctrine->getManager()->getRepository(User::class)->findBy([], ['id' => 'DESC']),
+            'users'       => $this->repo($doctrine, User::class)->findBy([], ['id' => 'DESC']),
             'plans'       => $plans,
             'active_map'  => $activeMap,
             'pending_ids' => $pendingIds,
@@ -121,7 +120,7 @@ class AdminController extends AbstractController
     }
 
     #[Route('/users/{id}/plan', name: 'user_setplan', methods: ['POST'])]
-    public function userSetPlan(User $user, Request $request, Connection $conn): Response
+    public function userSetPlan(User $user, Request $request, Connection $conn, EntityManagerInterface $em): Response
     {
         if (!$this->isCsrfTokenValid('plan_user_' . $user->getId(), (string) $request->request->get('_token'))) {
             $this->addFlash('error', 'Security token mismatch.');
@@ -134,23 +133,40 @@ class AdminController extends AbstractController
             return $this->redirectToRoute('app_admin_users');
         }
 
+        [, $approvedWord] = $this->statusWords($conn);
+
         // wipe whatever the user had — a direct set resolves pending requests too
         $conn->delete($subs, [$uc => $user->getId()]);
 
         $planId = (string) $request->request->get('plan_id', '');
         if ($planId !== '') {
             $plan = $this->planById($conn, (int) $planId);
-            if (!$plan || !$pc || !$sc) {
+            if (!$plan || !$pc || !$sc || !$approvedWord) {
                 $this->addFlash('error', 'That plan does not exist.');
                 return $this->redirectToRoute('app_admin_users');
             }
-            $row = [$uc => $user->getId(), $pc => (int) $planId, $sc => 'active'];
+
+            $row = [$uc => $user->getId(), $pc => (int) $planId, $sc => $approvedWord];
             if ($tc) {
                 $row[$tc] = date('Y-m-d H:i:s');
             }
             $conn->insert($subs, $row);
-            $this->addFlash('success', sprintf('%s is now on %s.', $user->getName() ?? $user->getEmail(), $plan['name']));
+
+            // the dual-write: tier only gets a word that's IN its enum dictionary
+            $tier = $this->tierForPlan($conn, $em, $plan['name']);
+            if ($tier !== null) {
+                $user->setTier($tier);
+                $em->flush();
+                $this->addFlash('success', sprintf('%s is now on %s (tier: %s).', $user->getName() ?? $user->getEmail(), $plan['name'], $tier));
+            } else {
+                $this->addFlash('success', sprintf('%s is now on %s — users.tier left unchanged (no matching word in its enum).', $user->getName() ?? $user->getEmail(), $plan['name']));
+            }
         } else {
+            $free = $this->freeTierWord($conn, $em);
+            if ($free !== null) {
+                $user->setTier($free);
+                $em->flush();
+            }
             $this->addFlash('success', sprintf('Removed the plan for %s.', $user->getName() ?? $user->getEmail()));
         }
 
@@ -160,32 +176,81 @@ class AdminController extends AbstractController
     // ================================================================ pending requests
 
     #[Route('/pending/{id}/approve', name: 'pending_approve', methods: ['POST'])]
-    public function pendingApprove(int $id, Request $request, Connection $conn): Response
+    public function pendingApprove(int $id, Request $request, Connection $conn, ManagerRegistry $doctrine): Response
     {
-        return $this->resolvePending($id, $request, $conn, 'approve', 'active', 'Approved — that plan is now live.');
+        return $this->resolvePending($id, $request, $conn, $doctrine, true);
     }
 
     #[Route('/pending/{id}/reject', name: 'pending_reject', methods: ['POST'])]
-    public function pendingReject(int $id, Request $request, Connection $conn): Response
+    public function pendingReject(int $id, Request $request, Connection $conn, ManagerRegistry $doctrine): Response
     {
-        return $this->resolvePending($id, $request, $conn, 'reject', 'rejected', 'Request rejected — the user can try again.');
+        return $this->resolvePending($id, $request, $conn, $doctrine, false);
     }
 
-    private function resolvePending(int $id, Request $request, Connection $conn, string $csrfAction, string $status, string $message): Response
+    private function resolvePending(int $id, Request $request, Connection $conn, ManagerRegistry $doctrine, bool $approve): Response
     {
+        $csrfAction = $approve ? 'approve' : 'reject';
         if (!$this->isCsrfTokenValid('sub_' . $csrfAction . '_' . $id, (string) $request->request->get('_token'))) {
             $this->addFlash('error', 'Security token mismatch.');
             return $this->redirectToRoute('app_admin_dashboard');
         }
 
-        [$subs, , , $sc] = $this->subsColumns($conn);
-        if (!$subs || !$sc) {
+        [$subs, $uc, $pc, $sc] = $this->subsColumns($conn);
+        if (!$subs || !$uc || !$pc || !$sc) {
             $this->addFlash('error', 'No subscription table found.');
             return $this->redirectToRoute('app_admin_dashboard');
         }
+        $idC = $this->idColumn($conn, $subs) ?? 'id';
 
-        $affected = $conn->update($subs, [$sc => $status], [$this->idColumn($conn, $subs) ?? 'id' => $id]);
-        $this->addFlash($affected > 0 ? 'success' : 'error', $affected > 0 ? $message : 'No request found with that id.');
+        $row = $conn->fetchAssociative(
+            "SELECT `$uc` AS uid, `$pc` AS pid FROM `$subs` WHERE `$idC` = ?",
+            [$id]
+        );
+        if (!$row) {
+            $this->addFlash('error', 'No request found with that id.');
+            return $this->redirectToRoute('app_admin_dashboard');
+        }
+
+        [, $approvedWord, $rejectedWord] = $this->statusWords($conn);
+
+        $userId = (int) $row['uid'];
+        $plan   = $this->planById($conn, (int) $row['pid']);
+
+        if ($approve) {
+            if (!$approvedWord) {
+                $this->addFlash('error', 'The status column has no approved-value in its dictionary — cannot approve.');
+                return $this->redirectToRoute('app_admin_dashboard');
+            }
+
+            $conn->update($subs, [$sc => $approvedWord], [$idC => $id]);
+
+            // dual-write: tier only gets a word that's IN its enum dictionary
+            if ($plan) {
+                $em     = $doctrine->getManager();
+                $target = $em->find(User::class, $userId);
+                $tier   = $this->tierForPlan($conn, $em, $plan['name']);
+
+                if ($target && $tier !== null) {
+                    $target->setTier($tier);
+                    $em->flush();
+                    $this->addFlash('success', sprintf('Approved — the user\'s tier is now "%s".', $tier));
+                } elseif ($target) {
+                    $this->addFlash('success', sprintf('Approved. (users.tier has no word matching "%s", so it was left unchanged.)', $plan['name']));
+                } else {
+                    $this->addFlash('success', 'Approved.');
+                }
+            } else {
+                $this->addFlash('success', 'Approved.');
+            }
+        } else {
+            if ($rejectedWord) {
+                $conn->update($subs, [$sc => $rejectedWord], [$idC => $id]);
+            } else {
+                // the dictionary has no rejected-word — removing the request IS the rejection
+                $conn->delete($subs, [$idC => $id]);
+            }
+            $this->addFlash('success', 'Request rejected — the user can try again.');
+        }
 
         return $this->redirectToRoute('app_admin_dashboard');
     }
@@ -196,14 +261,14 @@ class AdminController extends AbstractController
     public function movies(ManagerRegistry $doctrine): Response
     {
         return $this->render('admin/movies.html.twig', [
-            'movies' => $doctrine->getManager()->getRepository(Movie::class)->findBy([], ['id' => 'DESC']),
+            'movies' => $this->repo($doctrine, Movie::class)->findBy([], ['id' => 'DESC']),
         ]);
     }
 
     #[Route('/movies/new', name: 'movie_new', methods: ['GET', 'POST'])]
     public function movieNew(Request $request, ManagerRegistry $doctrine): Response
     {
-        $em = $doctrine->getManager();
+        $em = $this->em($doctrine);
         $errors = [];
 
         if ($request->isMethod('POST')) {
@@ -222,7 +287,7 @@ class AdminController extends AbstractController
     #[Route('/movies/{id}/edit', name: 'movie_edit', methods: ['GET', 'POST'])]
     public function movieEdit(Movie $movie, Request $request, ManagerRegistry $doctrine): Response
     {
-        $em = $doctrine->getManager();
+        $em = $this->em($doctrine);
         $errors = [];
 
         if ($request->isMethod('POST')) {
@@ -266,7 +331,7 @@ class AdminController extends AbstractController
 
     // ================================================================ movie form plumbing
 
-        /** @return array{0:?Movie, 1:string[]} */
+    /** @return array{0:?Movie, 1:string[]} */
     private function movieFromRequest(Request $request, EntityManagerInterface $em, ?Movie $movie): array
     {
         $errors = [];
@@ -317,7 +382,7 @@ class AdminController extends AbstractController
         if ($data['tmdb_id'] !== '') {
             $movie->setTmdbId((int) $data['tmdb_id']);
         } elseif ($movie->getTmdbId() === null) {
-            $movie->setTmdbId(time()); // unique-ish placeholder that fits an INT column
+            $movie->setTmdbId(time());
         }
 
         $movie->getGenres()->clear();
@@ -349,31 +414,11 @@ class AdminController extends AbstractController
         ];
     }
 
-    private function trySet(object $entity, string $method, array $candidates): void
-    {
-        foreach ($candidates as $value) {
-            try {
-                $entity->{$method}($value);
-                return;
-            } catch (\Throwable) {
-                // wrong type for that setter — try the next shape
-            }
-        }
-    }
+    // ================================================================ editor-truth helpers
 
-    // ================================================================ runtime schema helpers
-
-    /**
-     * ManagerRegistry speaks the generic "persistence" dialect: its
-     * getManager() is typed as ObjectManager, whose getRepository()
-     * only promises ObjectRepository. The real object is always
-     * Doctrine's EntityRepository — the assert makes the editor
-     * check the box instead of trusting the label.
-     */
     private function repo(ManagerRegistry $doctrine, string $class): EntityRepository
     {
         $repository = $doctrine->getManager()->getRepository($class);
-
         \assert($repository instanceof EntityRepository);
 
         return $repository;
@@ -382,11 +427,12 @@ class AdminController extends AbstractController
     private function em(ManagerRegistry $doctrine): EntityManagerInterface
     {
         $em = $doctrine->getManager();
-
         \assert($em instanceof EntityManagerInterface);
 
         return $em;
     }
+
+    // ================================================================ runtime schema helpers
 
     private function tableExists(Connection $conn, string $table): bool
     {
@@ -488,13 +534,148 @@ class AdminController extends AbstractController
         ];
     }
 
+    /**
+     * The status column may be an ENUM — a column with a closed dictionary.
+     * MySQL error 1265 means "word not in the dictionary", so we READ the
+     * dictionary at runtime and use whichever real words mean pending /
+     * approved / rejected.
+     *
+     * @return array{0:string,1:?string,2:?string} [pending, approved, rejected]
+     */
+    private function statusWords(Connection $conn): array
+    {
+        [$subs, , , $sc] = $this->subsColumns($conn);
+        if (!$subs || !$sc) {
+            return ['pending', 'active', 'rejected'];
+        }
+
+        $rows = $conn->fetchAllAssociative(
+            'SHOW COLUMNS FROM `' . $subs . '` LIKE ' . $conn->quote($sc)
+        );
+        $type = (string) ($rows[0]['Type'] ?? '');
+
+        if (preg_match('/^enum\((.*)\)$/i', $type, $m)) {
+            $values = array_map(
+                static fn (string $v): string => trim($v, " '\t"),
+                explode(',', $m[1])
+            );
+            $values = array_values(array_filter($values, static fn (string $v): bool => $v !== ''));
+
+            $pending = in_array('pending', $values, true) ? 'pending' : ($values[0] ?? 'pending');
+
+            $approved = null;
+            foreach (['active', 'approved', 'accepted', 'granted', 'paid'] as $cand) {
+                if (in_array($cand, $values, true)) { $approved = $cand; break; }
+            }
+            if ($approved === null) {
+                foreach ($values as $v) {
+                    if ($v !== $pending) { $approved = $v; break; }
+                }
+            }
+
+            $rejected = null;
+            foreach (['rejected', 'denied', 'declined', 'cancelled', 'canceled', 'refused'] as $cand) {
+                if (in_array($cand, $values, true)) { $rejected = $cand; break; }
+            }
+
+            return [$pending, $approved, $rejected];
+        }
+
+        // plain varchar column — accepts any word
+        return ['pending', 'active', 'rejected'];
+    }
+
+    /**
+     * users.tier may ALSO be an ENUM with its own dictionary (error 1265 on
+     * 'tier' = the same bouncer, different door). Return its real words,
+     * or null when the column is a plain varchar.
+     *
+     * @return list<string>|null
+     */
+    private function tierDictionary(Connection $conn, EntityManagerInterface $em): ?array
+    {
+        $meta      = $em->getClassMetadata(User::class);
+        $usersTable = $meta->getTableName();
+        $tierCol   = $meta->getColumnName('tier');
+
+        $rows = $conn->fetchAllAssociative(
+            'SHOW COLUMNS FROM `' . $usersTable . '` LIKE ' . $conn->quote($tierCol)
+        );
+        $type = (string) ($rows[0]['Type'] ?? '');
+
+        if (!preg_match('/^enum\((.*)\)$/i', $type, $m)) {
+            return null;
+        }
+
+        $values = array_map(
+            static fn (string $v): string => trim($v, " '\t"),
+            explode(',', $m[1])
+        );
+
+        return array_values(array_filter($values, static fn (string $v): bool => $v !== ''));
+    }
+
+    /**
+     * Pick the tier word for a plan name, using only words the column
+     * actually accepts. Matching ladder: exact name, then a dictionary
+     * word inside the plan name ("Premium Monthly" -> "premium"), then
+     * an alphanumeric compare. No match = null = don't touch the column.
+     */
+    private function tierForPlan(Connection $conn, EntityManagerInterface $em, string $planName): ?string
+    {
+        $dict = $this->tierDictionary($conn, $em);
+        if ($dict === null) {
+            // plain varchar column — cap at the 10-char length the mapping declares
+            return rtrim(substr(strtolower($planName), 0, 10)) ?: null;
+        }
+
+        $needle = strtolower(trim($planName));
+        $alnum  = preg_replace('/[^a-z0-9]/', '', $needle);
+
+        foreach ($dict as $v) {
+            if (strtolower($v) === $needle) {
+                return $v;
+            }
+        }
+        foreach ($dict as $v) {
+            if ($v !== '' && str_contains($needle, strtolower($v))) {
+                return $v;
+            }
+        }
+        foreach ($dict as $v) {
+            $va = preg_replace('/[^a-z0-9]/', '', strtolower($v));
+            if ($alnum !== '' && str_contains($va, (string) $alnum)) {
+                return $v;
+            }
+        }
+
+        return null;
+    }
+
+    /** The word to write when a user is reset to free — null if the dictionary has none. */
+    private function freeTierWord(Connection $conn, EntityManagerInterface $em): ?string
+    {
+        $dict = $this->tierDictionary($conn, $em);
+        if ($dict === null) {
+            return 'free';
+        }
+        foreach ($dict as $v) {
+            if (strtolower($v) === 'free') {
+                return $v;
+            }
+        }
+        return null;
+    }
+
     private function pendingCount(Connection $conn): int
     {
         [$subs, , , $sc] = $this->subsColumns($conn);
         if (!$subs || !$sc) {
             return 0;
         }
-        return (int) $conn->fetchOne("SELECT COUNT(*) FROM `$subs` WHERE `$sc` = 'pending'");
+        [$pendingWord] = $this->statusWords($conn);
+
+        return (int) $conn->fetchOne("SELECT COUNT(*) FROM `$subs` WHERE `$sc` = ?", [$pendingWord]);
     }
 
     private function pendingRows(Connection $conn, EntityManagerInterface $em): array
@@ -507,6 +688,7 @@ class AdminController extends AbstractController
         if (!$subsIdC) {
             return [];
         }
+        [$pendingWord] = $this->statusWords($conn);
 
         // ask Doctrine for the REAL users table/column names — never guess the schema
         $userMeta     = $em->getClassMetadata(User::class);
@@ -527,10 +709,10 @@ class AdminController extends AbstractController
             . ($plansTable && $planNameC && $planIdC ? ", p.`$planNameC` AS plan_name" : '')
             . " FROM `$subs` s JOIN `$usersTable` u ON u.`$usersIdCol` = s.`$uc`"
             . ($plansTable && $planNameC && $planIdC ? " LEFT JOIN `$plansTable` p ON p.`$planIdC` = s.`$pc`" : '')
-            . " WHERE s.`$sc` = 'pending' ORDER BY s.`$subsIdC` DESC LIMIT 10";
+            . " WHERE s.`$sc` = ? ORDER BY s.`$subsIdC` DESC LIMIT 10";
 
         $rows = [];
-        foreach ($conn->fetchAllAssociative($sql) as $r) {
+        foreach ($conn->fetchAllAssociative($sql, [$pendingWord]) as $r) {
             $rows[] = [
                 'id'        => (int) $r['sid'],
                 'user_id'   => (int) $r['uid'],
@@ -550,10 +732,12 @@ class AdminController extends AbstractController
 
         [$subs, $uc, $pc, $sc] = $this->subsColumns($conn);
         if ($subs && $uc && $pc && $sc) {
+            [$pendingWord, $approvedWord] = $this->statusWords($conn);
             foreach ($conn->fetchAllAssociative("SELECT `$uc` AS uid, `$pc` AS pid, `$sc` AS st FROM `$subs`") as $row) {
-                if (($row['st'] ?? null) === 'active') {
+                $status = (string) ($row['st'] ?? '');
+                if ($approvedWord !== null && $status === $approvedWord) {
                     $activeMap[(int) $row['uid']] = (int) $row['pid'];
-                } elseif (($row['st'] ?? null) === 'pending') {
+                } elseif ($status === $pendingWord) {
                     $pendingIds[(int) $row['uid']] = true;
                 }
             }

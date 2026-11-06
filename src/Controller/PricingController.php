@@ -12,14 +12,12 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class PricingController extends AbstractController
 {
-    // Plans table + column candidates (same runtime-detection trick as before).
     private const PLAN_TABLES  = ['plans', 'plan', 'memberships', 'tiers'];
     private const NAME_COLS    = ['name', 'plan_name', 'title', 'label'];
     private const PRICE_COLS   = ['price', 'amount', 'monthly_price', 'cost', 'fee'];
     private const DESC_COLS    = ['description', 'details', 'info', 'about', 'summary'];
     private const DUR_COLS     = ['duration', 'period', 'billing_period', 'interval'];
 
-    // Subscription-request table + column candidates.
     private const SUBS_TABLES   = ['subscription_requests', 'subscriptions', 'user_subscriptions', 'plan_requests'];
     private const SUB_USER_COLS = ['user_id', 'users_id', 'userid', 'user'];
     private const SUB_PLAN_COLS = ['plan_id', 'plans_id', 'plan', 'planid', 'plan_name', 'tier'];
@@ -32,10 +30,9 @@ class PricingController extends AbstractController
         $pending = false;
         $activePlanId = null;
 
-        // the ONLY guest test that matters: is there a logged-in user at all
         $user = $this->getUser();
         if ($user instanceof User) {
-            [$pending, $activePlanId] = $this->subscriptionState($conn, (int) $user->getId());
+            [$pending, $activePlanId] = $this->subscriptionState($conn, (int) $user->getId(), $user->getTier());
         }
 
         return $this->render('pricing/index.html.twig', [
@@ -91,7 +88,7 @@ class PricingController extends AbstractController
         }
 
         $digits = preg_replace('/[\s\-]/', '', $old['card_number']);
-        if (!preg_match('/^\d{12,19}$/', $digits)) {
+        if (!preg_match('/^\d{12,19}$/', (string) $digits)) {
             $errors[] = 'Card number must be 12–19 digits (try 4242 4242 4242 4242).';
         }
 
@@ -127,16 +124,18 @@ class PricingController extends AbstractController
             return $this->redirectToRoute('app_pricing');
         }
 
+        [$pendingWord] = $this->statusWords($conn);
+
         $alreadyPending = (int) $conn->fetchOne(
-            "SELECT COUNT(*) FROM `$subs` WHERE `$uc` = ? AND `$sc` = 'pending'",
-            [$user->getId()]
+            "SELECT COUNT(*) FROM `$subs` WHERE `$uc` = ? AND `$sc` = ?",
+            [$user->getId(), $pendingWord]
         );
         if ($alreadyPending > 0) {
             $this->addFlash('info', 'You already have a request waiting for approval.');
             return $this->redirectToRoute('app_pricing');
         }
 
-        $row = [$uc => $user->getId(), $pc => $plan['id'], $sc => 'pending'];
+        $row = [$uc => $user->getId(), $pc => $plan['id'], $sc => $pendingWord];
         if ($tc) {
             $row[$tc] = date('Y-m-d H:i:s');
         }
@@ -228,7 +227,7 @@ class PricingController extends AbstractController
         return null;
     }
 
-    /** @return array{0:?string,1:?string,2:?string,3:?string,4:?string} [table, userCol, planCol, statusCol, tsCol] */
+    /** @return array{0:?string,1:?string,2:?string,3:?string,4:?string} */
     private function subsColumns(Connection $conn): array
     {
         $table = null;
@@ -249,23 +248,91 @@ class PricingController extends AbstractController
         ];
     }
 
-    /** @return array{0:bool,1:?int} [hasPending?, activePlanId] */
-    private function subscriptionState(Connection $conn, int $userId): array
+    /**
+     * Reads the status column's ENUM dictionary at runtime and picks the
+     * words that actually exist. Same doctrine as the column candidates,
+     * one level deeper: never guess a vocabulary you can read.
+     *
+     * @return array{0:string,1:?string,2:?string} [pending, approved, rejected]
+     */
+    private function statusWords(Connection $conn): array
     {
-        [$subs, $uc, $pc, $sc] = $this->subsColumns($conn);
-        if (!$subs || !$uc || !$pc || !$sc) {
-            return [false, null];
+        [$subs, , , $sc] = $this->subsColumns($conn);
+        if (!$subs || !$sc) {
+            return ['pending', 'active', 'rejected'];
         }
 
-        $pending = (int) $conn->fetchOne(
-            "SELECT COUNT(*) FROM `$subs` WHERE `$uc` = ? AND `$sc` = 'pending'",
-            [$userId]
+        $rows = $conn->fetchAllAssociative(
+            'SHOW COLUMNS FROM `' . $subs . '` LIKE ' . $conn->quote($sc)
         );
-        $active = $conn->fetchOne(
-            "SELECT `$pc` FROM `$subs` WHERE `$uc` = ? AND `$sc` = 'active' LIMIT 1",
-            [$userId]
-        );
+        $type = (string) ($rows[0]['Type'] ?? '');
 
-        return [$pending > 0, $active ? (int) $active : null];
+        if (preg_match('/^enum\((.*)\)$/i', $type, $m)) {
+            $values = array_map(
+                static fn (string $v): string => trim($v, " '\t"),
+                explode(',', $m[1])
+            );
+            $values = array_values(array_filter($values, static fn (string $v): bool => $v !== ''));
+
+            $pending = in_array('pending', $values, true) ? 'pending' : ($values[0] ?? 'pending');
+
+            $approved = null;
+            foreach (['active', 'approved', 'accepted', 'granted', 'paid'] as $cand) {
+                if (in_array($cand, $values, true)) { $approved = $cand; break; }
+            }
+            if ($approved === null) {
+                foreach ($values as $v) {
+                    if ($v !== $pending) { $approved = $v; break; }
+                }
+            }
+
+            $rejected = null;
+            foreach (['rejected', 'denied', 'declined', 'cancelled', 'canceled', 'refused'] as $cand) {
+                if (in_array($cand, $values, true)) { $rejected = $cand; break; }
+            }
+
+            return [$pending, $approved, $rejected];
+        }
+
+        return ['pending', 'active', 'rejected'];
+    }
+
+    /** @return array{0:bool,1:?int} [hasPending?, activePlanId] */
+    private function subscriptionState(Connection $conn, int $userId, ?string $tier): array
+    {
+        [$subs, $uc, $pc, $sc] = $this->subsColumns($conn);
+        [$pendingWord, $approvedWord] = $this->statusWords($conn);
+
+        $pending = false;
+        $activePlanId = null;
+
+        if ($subs && $uc && $pc && $sc) {
+            $pending = (int) $conn->fetchOne(
+                "SELECT COUNT(*) FROM `$subs` WHERE `$uc` = ? AND `$sc` = ?",
+                [$userId, $pendingWord]
+            ) > 0;
+
+            if ($approvedWord !== null) {
+                $active = $conn->fetchOne(
+                    "SELECT `$pc` FROM `$subs` WHERE `$uc` = ? AND `$sc` = ? LIMIT 1",
+                    [$userId, $approvedWord]
+                );
+                if ($active !== null && $active !== false && (string) $active !== '') {
+                    $activePlanId = (int) $active;
+                }
+            }
+        }
+
+        // legacy fallback: a tier set directly (or by the old app) with no row at all
+        if ($activePlanId === null && $tier !== null && strtolower($tier) !== 'free') {
+            foreach ($this->allPlans($conn) as $plan) {
+                if (strtolower($plan['name']) === strtolower($tier)) {
+                    $activePlanId = $plan['id'];
+                    break;
+                }
+            }
+        }
+
+        return [$pending, $activePlanId];
     }
 }
