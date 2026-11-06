@@ -18,3 +18,4 @@
 /public/build/
 /assets/vendor/
 ###< symfony/asset-mapper ###
+/public/uploads/
