@@ -1,5 +1,7 @@
 twig:
     file_name_pattern: '*.twig'
+    globals:
+        premium_access: '@App\Service\PremiumAccess'
 
 when@test:
     twig:

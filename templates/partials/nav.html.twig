@@ -1,5 +1,7 @@
 <header>
+    
     <div class="wrap nav">
+        {% set is_premium = premium_access.hasPremiumAccess(app.user) %}
         <!-- Logo: links back to homepage -->
         <a href="/" class="logo">
             <img src="{{ asset('assets/logo/g4.png') }}" alt="Streamlist icon">
@@ -25,7 +27,7 @@
         
         <div class="nav-auth">
             {% if app.user %}
-                {% if app.user.tier == 'premium' %}
+                {% if is_premium %}
                     <span class="plus-badge">★ PLUS</span>
                 {% else %}
                     <a href="{{ path('app_pricing') }}" class="upgrade-link">Upgrade</a>
@@ -48,7 +50,7 @@
                         <div class="profile-dropdown-header">
                             <p class="profile-dropdown-name">{{ app.user.name }}</p>
                             <p class="profile-dropdown-email">{{ app.user.email }}</p>
-                            <p class="profile-dropdown-tier">{{ app.user.tier }} member</p>
+                            <p class="profile-dropdown-tier">{{ is_premium ? 'premium' : app.user.tier }} member</p>
                         </div>
                         {% if is_granted('ROLE_ADMIN') %}
                             <a href="{{ path('app_admin_dashboard') }}" class="profile-dropdown-item">Admin</a>
