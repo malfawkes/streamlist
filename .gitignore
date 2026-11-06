@@ -18,4 +18,5 @@
 /public/build/
 /assets/vendor/
 ###< symfony/asset-mapper ###
-/public/uploads/
+/public/uploads//.env
+/.env.dev
