@@ -25,7 +25,10 @@ class MovieController extends AbstractController
         MovieCreditRepository $creditRepo,
         CsrfTokenManagerInterface $csrf
     ): Response {
+        // Defaults FIRST — the render array below must always carry these,
+        // or Twig (strict variables) fatals with "Variable does not exist".
         $inWatchlist = false;
+        $hasPremium  = false;
         $user = $this->getUser();
 
         if ($user instanceof User) {
@@ -34,6 +37,7 @@ class MovieController extends AbstractController
                 'movie' => $movie,
             ]);
             $inWatchlist = $existing !== null;
+            $hasPremium  = $user->hasActivePremium();   // for the premium lock UI
         }
 
         $action  = $inWatchlist ? 'app_watchlist_remove' : 'app_watchlist_add';
@@ -45,6 +49,7 @@ class MovieController extends AbstractController
             'in_watchlist'     => $inWatchlist,
             'watchlist_action' => $action,
             'watchlist_token'  => $csrf->getToken($tokenId)->getValue(),
+            'has_premium'      => $hasPremium,
         ]);
     }
 }

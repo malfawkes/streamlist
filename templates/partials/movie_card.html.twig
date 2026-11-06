@@ -16,12 +16,24 @@
         <p class="premium-badge">★ PREMIUM</p>
     {% endif %}
 
+    {% set in_watchlist = false %}
     {% if app.user %}
-        <form method="post"
-              action="{{ path('app_watchlist_add', {id: movie.id}) }}">
-            <input type="hidden" name="_token"
-                   value="{{ csrf_token('watchlist_add_' ~ movie.id) }}">
-            <button type="submit">+ Watchlist</button>
-        </form>
+        {% for item in app.user.watchlistItems %}
+            {% if item.movie.id == movie.id %}{% set in_watchlist = true %}{% endif %}
+        {% endfor %}
+    {% endif %}
+
+    {% if app.user %}
+        {% if in_watchlist %}
+            <form method="post" action="{{ path('app_watchlist_remove', {id: movie.id}) }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('watchlist_remove_' ~ movie.id) }}">
+                <button type="submit">Remove</button>
+            </form>
+        {% else %}
+            <form method="post" action="{{ path('app_watchlist_add', {id: movie.id}) }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('watchlist_add_' ~ movie.id) }}">
+                <button type="submit">+ Watchlist</button>
+            </form>
+        {% endif %}
     {% endif %}
 </div>

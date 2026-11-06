@@ -29,6 +29,12 @@
             <div class="wrap"><p class="message message-error">{{ flash }}</p></div>
         {% endfor %}
 
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="site-flash site-flash--{{ label }}">{{ message }}</div>
+            {% endfor %}
+        {% endfor %}
+
         {% block body %}{% endblock %}
                 
         {{ include('partials/footer.html.twig') }}

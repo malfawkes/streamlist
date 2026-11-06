@@ -3119,3 +3119,19 @@ a.adm-list__name:hover { text-decoration: underline; }
 .err-text { color:var(--color-muted, #6b7280); margin:0 0 22px; }
 .err-btn { display:inline-block; padding:11px 20px; background:#0f111a; color:#fff; border-radius:10px; text-decoration:none; font-weight:600; }
 .err-btn:hover { background:#000; color:#fff; }
+
+/* ===== v2.3 — global flash + premium lock ===== */
+.site-flash { max-width:1040px; margin:16px auto 0; padding:11px 16px; border-radius:10px; border:1px solid; font-size:14px; }
+.site-flash--success { background:#f0fdf4; border-color:#bbf7d0; color:#14532d; }
+.site-flash--error { background:#fef2f2; border-color:#fecaca; color:#7f1d1d; }
+.site-flash--warning { background:#fffbeb; border-color:#fde68a; color:#92400e; }
+.site-flash--info { background:#f8fafc; border-color:#e2e8f0; color:#0f172a; }
+
+.md-lock { display:flex; gap:28px; max-width:860px; margin:56px auto; padding:0 20px; align-items:flex-start; }
+.md-lock__poster { width:220px; border-radius:14px; box-shadow:0 10px 30px rgb(0 0 0 / .25); }
+.md-lock__body h1 { margin:10px 0 8px; font-size:30px; letter-spacing:-.5px; }
+.md-lock__body p { color:var(--color-muted, #6b7280); line-height:1.6; max-width:46ch; }
+.md-lock__badge { display:inline-block; background:#0f111a; color:#fff; font-size:11px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; padding:5px 12px; border-radius:999px; }
+.md-lock__btn { display:inline-block; margin-top:18px; background:#0f111a; color:#fff; padding:12px 22px; border-radius:10px; text-decoration:none; font-weight:700; }
+.md-lock__btn:hover { background:#000; color:#fff; }
+@media (max-width:700px) { .md-lock { flex-direction:column; } .md-lock__poster { width:160px; } }

@@ -15,6 +15,12 @@
         </div>
     {% endif %}
 
+    {% if old is not empty %}
+        {% set premium_checked = (old.is_premium ?? '') == '1' %}
+    {% else %}
+        {% set premium_checked = movie ? (movie.isPremium ? true : false) : false %}
+    {% endif %}
+
     <form method="post" class="adm-form"
           action="{{ movie ? path('app_admin_movie_edit', {id: movie.id}) : path('app_admin_movie_new') }}">
         <label for="title">Title *</label>
@@ -34,7 +40,6 @@
 
         <label>Access</label>
         <div class="adm-checks">
-            {% set premium_checked = old is not empty ? (old.is_premium ?? '') == '1' : (movie ? movie.isPremium : false) %}
             <label>
                 <input type="checkbox" name="is_premium" value="1" {% if premium_checked %}checked{% endif %}>
                 Premium only

@@ -5,12 +5,6 @@
 {% block body %}
 <div class="pr-page">
 
-    {% for label, messages in app.flashes %}
-        {% for message in messages %}
-            <div class="pr-flash pr-flash--{{ label }}">{{ message }}</div>
-        {% endfor %}
-    {% endfor %}
-
     {% if plans %}
     <div class="pr-grid">
         {% for plan in plans %}

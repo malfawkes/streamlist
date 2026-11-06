@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use App\Entity\Movie;
+use App\Entity\User;
 
 final class WatchlistController extends AbstractController
 {
@@ -19,7 +20,7 @@ final class WatchlistController extends AbstractController
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     public function index(WatchlistItemRepository $repo): Response
     {
-        $items = $repo->findForUser($this->getUser());
+        $items = $repo->findForUser($this->currentUser());
 
         return $this->render('watchlist/index.html.twig', [
             'items' => $items,
@@ -45,16 +46,38 @@ final class WatchlistController extends AbstractController
             return $this->redirectToRoute('app_movies');
         }
 
+        // ── TYPE NARROWING ──
+        // getUser() only promises ?UserInterface — an interface that knows
+        // nothing about hasActivePremium(). currentUser() returns OUR
+        // App\Entity\User, so PHP and the editor both can see the method.
+        $user = $this->currentUser();
+
+        // ── PREMIUM GATE — the real bouncer lives here, not in the template ──
+        if ($movie->isPremium() && !$user->hasActivePremium()) {
+            $this->addFlash('error', sprintf(
+                '"%s" is a ★ PREMIUM title — upgrade your plan to add it to your watchlist.',
+                $movie->getTitle()
+            ));
+            return $this->redirectToRoute('app_pricing');
+        }
+
+        // ── FREE-TIER CAP — the 20-title promise on the About page ──
+        // (was FREE_TIER_WATCHLIST_LIMIT in the old app; premium lifts the cap)
+        if (!$user->hasActivePremium() && $repo->countForUser($user) >= 20) {
+            $this->addFlash('error', 'Free watchlist is full (20 titles). Upgrade for unlimited.');
+            return $this->redirectToRoute('app_pricing');
+        }
+
         // duplicate check — your "already in watchlist" (the UNIQUE
         // constraint still backs this up at the DB level)
-        if ($repo->findOneForUser($this->getUser(), $movie->getId())) {
+        if ($repo->findOneForUser($user, $movie->getId())) {
             $this->addFlash('error', 'Already in your watchlist.');
             return $this->redirectToRoute('app_movies');
         }
 
         // THE WRITE PATTERN: create → relate → persist → flush
         $item = new WatchlistItem();          // createdAt set in constructor ✓
-        $item->setUser($this->getUser());     // identity from the SESSION —
+        $item->setUser($user);                // identity from the SESSION —
         $item->setMovie($movie);              // never from the form. Your law.
 
         $em->persist($item);
@@ -79,7 +102,7 @@ final class WatchlistController extends AbstractController
         }
 
         // scoped delete: THIS user's row for THIS movie — never just movie_id
-        $item = $repo->findOneForUser($this->getUser(), $movie->getId());
+        $item = $repo->findOneForUser($this->currentUser(), $movie->getId());
         if (!$item) {
             $this->addFlash('error', 'Not in your watchlist.');
             return $this->redirectToRoute('app_watchlist');
@@ -90,5 +113,23 @@ final class WatchlistController extends AbstractController
 
         $this->addFlash('success', 'Removed from your watchlist.');
         return $this->redirectToRoute('app_watchlist');
+    }
+
+    // ── TYPE NARROWING HELPER ───────────────────────────────────
+    /**
+     * getUser() promises only ?UserInterface; the entity provider behind
+     * the firewall always yields App\Entity\User. This narrows the type so
+     * the editor (and PHP) can see hasActivePremium() etc. — and acts as a
+     * belt-and-braces guard if a route ever loses its IsGranted attribute.
+     */
+    private function currentUser(): User
+    {
+        $user = $this->getUser();
+
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException('Not logged in.');
+        }
+
+        return $user;
     }
 }

@@ -14,11 +14,6 @@
         <a class="adm-side__site" href="/">&larr; View site</a>
     </aside>
     <main class="adm-main">
-        {% for label, messages in app.flashes %}
-            {% for message in messages %}
-                <div class="adm-flash adm-flash--{{ label }}">{{ message }}</div>
-            {% endfor %}
-        {% endfor %}
         {% block admin_content %}{% endblock %}
     </main>
 </div>

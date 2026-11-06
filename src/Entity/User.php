@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -44,10 +46,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(name: 'avatar_path', nullable: true)]
     private ?string $avatarPath = null;
 
+    /**
+     * Inverse side of WatchlistItem::$user (the owning side).
+     * No extra DB column — but it makes app.user.watchlistItems
+     * work in Twig (movie_card.html.twig).
+     */
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: WatchlistItem::class, fetch: 'EXTRA_LAZY')]
+    private Collection $watchlistItems;
+
     public function __construct()
     {
         $this->isAdmin = false;        // every new user starts non-admin
         $this->tier = 'free';          // move the tier default here too (bonus)
+        $this->watchlistItems = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -149,6 +160,26 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    /**
+     * The one true "is this account premium RIGHT NOW?" check.
+     *
+     * tier = 'premium' AND (no expiry recorded, or the expiry is not past).
+     * NULL tier_expires_at counts as active: the admin approval flow
+     * sets the tier without an expiry date.
+     */
+    public function hasActivePremium(): bool
+    {
+        if (strtolower((string) $this->tier) !== 'premium') {
+            return false;
+        }
+
+        if ($this->tierExpiresAt === null) {
+            return true;                          // no expiry on file → active
+        }
+
+        return $this->tierExpiresAt >= new \DateTime('today');
+    }
+
     public function eraseCredentials(): void
     {
         // If you store any temporary, sensitive data on the user, clear it here
@@ -164,5 +195,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->avatarPath = $avatarPath;
 
         return $this;
+    }
+
+    /**
+     * All watchlist rows owned by this user (movie cards use this
+     * to know which movies are already saved).
+     */
+    public function getWatchlistItems(): Collection
+    {
+        return $this->watchlistItems;
     }
 }

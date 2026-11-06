@@ -1,0 +1,17 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Premium only — StreamList{% endblock %}
+
+{% block body %}
+<div class="md-lock">
+    {% if movie.posterPath %}
+        <img class="md-lock__poster" src="{{ movie.posterPath starts with 'http' ? movie.posterPath : 'https://image.tmdb.org/t/p/w342' ~ movie.posterPath }}" alt="{{ movie.title }}">
+    {% endif %}
+    <div class="md-lock__body">
+        <span class="md-lock__badge">Premium</span>
+        <h1>{{ movie.title }}</h1>
+        <p>This movie is part of the premium catalogue. Upgrade your membership to start watching it.</p>
+        <a class="md-lock__btn" href="{{ path('app_pricing') }}">View membership plans</a>
+    </div>
+</div>
+{% endblock %}

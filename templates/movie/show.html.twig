@@ -3,6 +3,13 @@
 {% block title %}{{ movie.title }} — StreamList{% endblock %}
 
 {% block body %}
+{# ── hardening: if a controller ever forgets one of these, the page still
+     renders instead of fataling with "Variable does not exist" (strict vars) ── #}
+{% set in_watchlist     = in_watchlist ?? false %}
+{% set watchlist_action = watchlist_action ?? 'app_watchlist_add' %}
+{% set watchlist_token  = watchlist_token ?? '' %}
+{% set has_premium      = has_premium ?? false %}
+
 <article class="md-page">
     <section
         class="md-hero{% if not movie.backdropPath %} md-hero--empty{% endif %}"
@@ -19,6 +26,9 @@
                     {% if movie.releaseDate %}
                         <span>{{ movie.releaseDate|date('Y') }}</span>
                     {% endif %}
+                    {% if movie.isPremium %}
+                        <span class="premium-badge">★ PREMIUM</span>
+                    {% endif %}
                 </p>
 
                 <div class="md-hero__genres">
@@ -31,12 +41,20 @@
                 </div>
 
                 {% if app.user %}
-                    <form action="{{ path(watchlist_action, {id: movie.id}) }}" method="post" class="md-hero__cta">
-                        <input type="hidden" name="_token" value="{{ watchlist_token }}">
-                        <button type="submit">
-                            {{ in_watchlist ? 'Remove from watchlist' : '+ Add to watchlist' }}
-                        </button>
-                    </form>
+                    {% if movie.isPremium and not has_premium %}
+                        {# premium lock: no add button — the link explains why.
+                           (The real gate is server-side in WatchlistController::add.) #}
+                        <a href="{{ path('app_pricing') }}" class="md-hero__login">
+                            ★ Premium title — upgrade your plan to add it
+                        </a>
+                    {% else %}
+                        <form action="{{ path(watchlist_action, {id: movie.id}) }}" method="post" class="md-hero__cta">
+                            <input type="hidden" name="_token" value="{{ watchlist_token }}">
+                            <button type="submit">
+                                {{ in_watchlist ? 'Remove from watchlist' : '+ Add to watchlist' }}
+                            </button>
+                        </form>
+                    {% endif %}
                 {% else %}
                     <a href="{{ path('app_login') }}" class="md-hero__login">Log in to add to your watchlist</a>
                 {% endif %}
