@@ -12,6 +12,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use App\Entity\Movie;
 use App\Entity\User;
+use App\Service\PremiumAccess;
 
 final class WatchlistController extends AbstractController
 {
@@ -39,6 +40,7 @@ final class WatchlistController extends AbstractController
         Request $request,
         EntityManagerInterface $em,
         WatchlistItemRepository $repo,
+        PremiumAccess $premium,
     ): Response {
         // CSRF — your token, framework-run
         if (!$this->isCsrfTokenValid('watchlist_add_' . $movie->getId(), $request->request->get('_token'))) {
@@ -52,8 +54,13 @@ final class WatchlistController extends AbstractController
         // App\Entity\User, so PHP and the editor both can see the method.
         $user = $this->currentUser();
 
+        // ONE ask, both sources of truth (users.tier AND the approved
+        // subscription row — see PremiumAccess). A subscribed member whose
+        // tier never got dual-written still gets in.
+        $hasPremium = $premium->hasPremiumAccess($user);
+
         // ── PREMIUM GATE — the real bouncer lives here, not in the template ──
-        if ($movie->isPremium() && !$user->hasActivePremium()) {
+        if ($movie->isPremium() && !$hasPremium) {
             $this->addFlash('error', sprintf(
                 '"%s" is a ★ PREMIUM title — upgrade your plan to add it to your watchlist.',
                 $movie->getTitle()
@@ -63,7 +70,7 @@ final class WatchlistController extends AbstractController
 
         // ── FREE-TIER CAP — the 20-title promise on the About page ──
         // (was FREE_TIER_WATCHLIST_LIMIT in the old app; premium lifts the cap)
-        if (!$user->hasActivePremium() && $repo->countForUser($user) >= 20) {
+        if (!$hasPremium && $repo->countForUser($user) >= 20) {
             $this->addFlash('error', 'Free watchlist is full (20 titles). Upgrade for unlimited.');
             return $this->redirectToRoute('app_pricing');
         }

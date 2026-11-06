@@ -6,6 +6,7 @@ use App\Entity\Movie;
 use App\Entity\User;
 use App\Repository\MovieCreditRepository;
 use App\Repository\WatchlistItemRepository;
+use App\Service\PremiumAccess;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -23,7 +24,8 @@ class MovieController extends AbstractController
         Movie $movie,
         WatchlistItemRepository $watchlistRepo,
         MovieCreditRepository $creditRepo,
-        CsrfTokenManagerInterface $csrf
+        CsrfTokenManagerInterface $csrf,
+        PremiumAccess $premium,
     ): Response {
         // Defaults FIRST — the render array below must always carry these,
         // or Twig (strict variables) fatals with "Variable does not exist".
@@ -37,7 +39,8 @@ class MovieController extends AbstractController
                 'movie' => $movie,
             ]);
             $inWatchlist = $existing !== null;
-            $hasPremium  = $user->hasActivePremium();   // for the premium lock UI
+            // both sources of truth: users.tier AND the approved subscription row
+            $hasPremium = $premium->hasPremiumAccess($user);
         }
 
         $action  = $inWatchlist ? 'app_watchlist_remove' : 'app_watchlist_add';
