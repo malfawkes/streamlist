@@ -51,4 +51,20 @@ class WatchlistItemRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleScalarResult();
     }
+
+    /**
+     * Movie ids on a user's watchlist — lets the movie cards show
+     * "already added" state with ONE query instead of one per card.
+     *
+     * @return list<int>
+     */
+    public function movieIdsForUser(User $user): array
+    {
+        $rows = $this->getEntityManager()
+            ->createQuery('SELECT IDENTITY(w.movie) FROM App\\Entity\\WatchlistItem w WHERE w.user = :user')
+            ->setParameter('user', $user)
+            ->getSingleColumnResult();
+
+        return array_map('intval', $rows);
+    }
 }

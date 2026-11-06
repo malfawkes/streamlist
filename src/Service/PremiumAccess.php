@@ -4,13 +4,14 @@ namespace App\Service;
 
 use App\Entity\User;
 use Doctrine\DBAL\Connection;
+use Symfony\Contracts\Service\ResetInterface;
 
 /**
  * One question, one answer: "does this user get PREMIUM access right now?"
  *
  * Two sources of truth are honored — UNION, not intersection:
  *
- *   1. users.tier = 'premium' (and not expired)   — the legacy path:
+ *   1. users.tier = 'premium' (and not expired) — the legacy path:
  *      tier set directly, or by an admin whose plan name DID match the
  *      tier column's enum dictionary.
  *
@@ -23,12 +24,25 @@ use Doctrine\DBAL\Connection;
  *
  * Same runtime schema-sniffing doctrine as PricingController: never guess
  * a table or column name you can read.
+ *
+ * The subscription-table verdict is memoized per user object, so the nav
+ * badge, every movie card and the controllers share ONE round of
+ * schema-sniffing per request. ResetInterface clears it between requests
+ * (FrankenPHP worker mode keeps services alive — stale verdicts must
+ * never leak into the next request).
  */
-final class PremiumAccess
+final class PremiumAccess implements ResetInterface
 {
     private const SUBS_TABLES   = ['subscription_requests', 'subscriptions', 'user_subscriptions', 'plan_requests'];
     private const SUB_USER_COLS = ['user_id', 'users_id', 'userid', 'user'];
     private const SUB_STAT_COLS = ['status', 'state'];
+
+    /**
+     * Verdicts keyed by object identity (spl_object_id).
+     *
+     * @var array<int,bool>
+     */
+    private array $verdicts = [];
 
     public function __construct(private readonly Connection $conn)
     {
@@ -36,13 +50,30 @@ final class PremiumAccess
 
     public function hasPremiumAccess(User $user): bool
     {
-        // 1) tier path — fast, no extra query
+        // 1) tier path — in-memory and free, so it is re-checked on every
+        //    call: an approval that lands mid-request (same object, tier
+        //    now written) takes effect immediately
         if ($user->hasActivePremium()) {
             return true;
         }
 
-        // 2) subscription-table path — same source as the pricing page
-        return $this->hasApprovedSubscription($user);
+        // 2) subscription-table path — memoized: one DB round-trip per
+        //    user object per request, shared by every caller
+        $key = spl_object_id($user);
+        if (isset($this->verdicts[$key])) {
+            return $this->verdicts[$key];
+        }
+
+        return $this->verdicts[$key] = $this->hasApprovedSubscription($user);
+    }
+
+    /**
+     * Called automatically between requests under FrankenPHP worker mode
+     * (services implementing ResetInterface get the kernel.reset tag).
+     */
+    public function reset(): void
+    {
+        $this->verdicts = [];
     }
 
     private function hasApprovedSubscription(User $user): bool

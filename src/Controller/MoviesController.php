@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Repository\GenreRepository;
 use App\Repository\MovieRepository;
+use App\Repository\WatchlistItemRepository;
+use App\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,8 +18,14 @@ final class MoviesController extends AbstractController
         Request $request,
         MovieRepository $movieRepository,
         GenreRepository $genreRepository,
+        WatchlistItemRepository $watchlistRepo,
     ): Response {
         $page = max(1, (int) $request->query->get('page', 1));
+
+        // one query: which movies are already on this user's watchlist?
+        // (cards show "✓ In watchlist" instead of a doomed "+ Watchlist")
+        $user = $this->getUser();
+        $watchlistIds = $user instanceof User ? $watchlistRepo->movieIdsForUser($user) : [];
 
         $genre = null;
         $rawGenre = $request->query->get('genre');
@@ -48,6 +56,7 @@ final class MoviesController extends AbstractController
             'page'         => $page,
             'totalPages'   => $totalPages,
             'total'        => $total,
+            'watchlist_ids' => $watchlistIds,
         ]);
     }
 }

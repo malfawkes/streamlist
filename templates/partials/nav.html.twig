@@ -1,7 +1,5 @@
 <header>
-    
     <div class="wrap nav">
-        {% set is_premium = premium_access.hasPremiumAccess(app.user) %}
         <!-- Logo: links back to homepage -->
         <a href="/" class="logo">
             <img src="{{ asset('assets/logo/g4.png') }}" alt="Streamlist icon">
@@ -27,6 +25,13 @@
         
         <div class="nav-auth">
             {% if app.user %}
+                {# Same canonical check as MovieController / WatchlistController:
+                   tier = premium (unexpired) UNION an approved subscription row.
+                   The old `app.user.tier == 'premium'` string compare showed
+                   "Upgrade" to subscribed members whose plan name never got
+                   dual-written into users.tier — and a ★ PLUS badge to expired
+                   ones. Both were wrong. #}
+                {% set is_premium = premium_access.hasPremiumAccess(app.user) %}
                 {% if is_premium %}
                     <span class="plus-badge">★ PLUS</span>
                 {% else %}
@@ -50,6 +55,8 @@
                         <div class="profile-dropdown-header">
                             <p class="profile-dropdown-name">{{ app.user.name }}</p>
                             <p class="profile-dropdown-email">{{ app.user.email }}</p>
+                            {# effective tier: say what the app actually grants,
+                               not the possibly-stale raw column word #}
                             <p class="profile-dropdown-tier">{{ is_premium ? 'premium' : app.user.tier }} member</p>
                         </div>
                         {% if is_granted('ROLE_ADMIN') %}

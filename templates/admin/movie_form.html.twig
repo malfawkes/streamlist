@@ -1,12 +1,12 @@
 {% extends 'admin/base.html.twig' %}
 
 {% block admin_content %}
-<header class="adm-head">
-    <h1>{{ movie ? 'Edit movie' : 'Add a movie' }}</h1>
-    {% if movie %}
-        <a class="adm-btn" href="{{ path('app_movie_show', {id: movie.id}) }}">View page</a>
-    {% endif %}
-</header>
+
+<h1>{{ movie ? 'Edit movie' : 'Add a movie' }}</h1>
+{% if movie %}
+    <a class="adm-btn" href="{{ path('app_movie_show', {id: movie.id}) }}">View page</a>
+{% endif %}
+
 
 <div class="adm-panel">
     {% if errors %}
@@ -15,14 +15,10 @@
         </div>
     {% endif %}
 
-    {% if old is not empty %}
-        {% set premium_checked = (old.is_premium ?? '') == '1' %}
-    {% else %}
-        {% set premium_checked = movie ? (movie.isPremium ? true : false) : false %}
-    {% endif %}
-
     <form method="post" class="adm-form"
           action="{{ movie ? path('app_admin_movie_edit', {id: movie.id}) : path('app_admin_movie_new') }}">
+        <input type="hidden" name="_token"
+               value="{{ csrf_token(movie ? 'movie_form_' ~ movie.id : 'movie_form_new') }}">
         <label for="title">Title *</label>
         <input type="text" id="title" name="title" value="{{ old.title ?? (movie ? movie.title : '') }}" required>
 
@@ -40,6 +36,7 @@
 
         <label>Access</label>
         <div class="adm-checks">
+            {% set premium_checked = old is not empty ? (old.is_premium ?? '') == '1' : (movie ? movie.isPremium : false) %}
             <label>
                 <input type="checkbox" name="is_premium" value="1" {% if premium_checked %}checked{% endif %}>
                 Premium only

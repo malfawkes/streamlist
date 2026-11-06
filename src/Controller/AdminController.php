@@ -97,6 +97,7 @@ class AdminController extends AbstractController
         $em = $doctrine->getManager();
         $name = $user->getName() ?? $user->getEmail();
 
+        // children first, parent second — same rule as every FK in your life
         foreach ($em->getRepository(WatchlistItem::class)->findBy(['user' => $user]) as $item) {
             $em->remove($item);
         }
@@ -134,30 +135,35 @@ class AdminController extends AbstractController
 
         [, $approvedWord] = $this->statusWords($conn);
 
+        $planId = (string) $request->request->get('plan_id', '');
+        $plan   = $planId !== '' ? $this->planById($conn, (int) $planId) : null;
+
+        // validate BEFORE wiping — a bad plan_id must never destroy
+        // the user's existing rows (stale page / tampered form)
+        if ($planId !== '' && (!$plan || !$pc || !$sc || !$approvedWord)) {
+            $this->addFlash('error', 'That plan does not exist.');
+            return $this->redirectToRoute('app_admin_users');
+        }
+
+        // wipe whatever the user had — a direct set resolves pending requests too
         $conn->delete($subs, [$uc => $user->getId()]);
 
-        $planId = (string) $request->request->get('plan_id', '');
-        if ($planId !== '') {
-            $plan = $this->planById($conn, (int) $planId);
-            if (!$plan || !$pc || !$sc || !$approvedWord) {
-                $this->addFlash('error', 'That plan does not exist.');
-                return $this->redirectToRoute('app_admin_users');
-            }
-
+        if ($plan) {
             $row = [$uc => $user->getId(), $pc => (int) $planId, $sc => $approvedWord];
             if ($tc) {
                 $row[$tc] = date('Y-m-d H:i:s');
             }
             $conn->insert($subs, $row);
 
-            // tier only gets a word that's in its enum dictionary — best effort, never fatal
-            $tier = $this->tierForPlan($conn, $em, $plan['name']);
+            // the dual-write: tier only gets a word that's IN its enum dictionary
+            $tier = $this->tierForPlan($conn, $em, $plan['name'], $plan['price'] ?? null);
             if ($tier !== null) {
                 $user->setTier($tier);
                 $em->flush();
+                $this->addFlash('success', sprintf('%s is now on %s (tier: %s).', $user->getName() ?? $user->getEmail(), $plan['name'], $tier));
+            } else {
+                $this->addFlash('success', sprintf('%s is now on %s — users.tier left unchanged (no matching word in its enum).', $user->getName() ?? $user->getEmail(), $plan['name']));
             }
-
-            $this->addFlash('success', sprintf('%s is now on %s.', $user->getName() ?? $user->getEmail(), $plan['name']));
         } else {
             $free = $this->freeTierWord($conn, $em);
             if ($free !== null) {
@@ -221,21 +227,43 @@ class AdminController extends AbstractController
 
             $conn->update($subs, [$sc => $approvedWord], [$idC => $id]);
 
+            // one active row per user: demote (or drop) any older
+            // approved rows so the user's plan stays unambiguous
+            if ($rejectedWord) {
+                $conn->executeStatement(
+                    "UPDATE `$subs` SET `$sc` = ? WHERE `$uc` = ? AND `$sc` = ? AND `$idC` <> ?",
+                    [$rejectedWord, $userId, $approvedWord, $id]
+                );
+            } else {
+                $conn->executeStatement(
+                    "DELETE FROM `$subs` WHERE `$uc` = ? AND `$sc` = ? AND `$idC` <> ?",
+                    [$userId, $approvedWord, $id]
+                );
+            }
+
+            // dual-write: tier only gets a word that's IN its enum dictionary
             if ($plan) {
                 $em     = $doctrine->getManager();
                 $target = $em->find(User::class, $userId);
-                $tier   = $this->tierForPlan($conn, $em, $plan['name']);
+                $tier   = $this->tierForPlan($conn, $em, $plan['name'], $plan['price'] ?? null);
+
                 if ($target && $tier !== null) {
                     $target->setTier($tier);
                     $em->flush();
+                    $this->addFlash('success', sprintf('Approved — the user\'s tier is now "%s".', $tier));
+                } elseif ($target) {
+                    $this->addFlash('success', sprintf('Approved. (users.tier has no word matching "%s", so it was left unchanged.)', $plan['name']));
+                } else {
+                    $this->addFlash('success', 'Approved.');
                 }
+            } else {
+                $this->addFlash('success', 'Approved.');
             }
-
-            $this->addFlash('success', 'User approved successfully.');
         } else {
             if ($rejectedWord) {
                 $conn->update($subs, [$sc => $rejectedWord], [$idC => $id]);
             } else {
+                // the dictionary has no rejected-word — removing the request IS the rejection
                 $conn->delete($subs, [$idC => $id]);
             }
             $this->addFlash('success', 'Request rejected — the user can try again.');
@@ -261,6 +289,12 @@ class AdminController extends AbstractController
         $errors = [];
 
         if ($request->isMethod('POST')) {
+            // CSRF — every other POST route has one; create/edit must too
+            if (!$this->isCsrfTokenValid('movie_form_new', (string) $request->request->get('_token'))) {
+                $this->addFlash('error', 'Security token mismatch — nothing was saved.');
+                return $this->redirectToRoute('app_admin_movies');
+            }
+
             [$movie, $errors] = $this->movieFromRequest($request, $em, null);
             if (!$errors) {
                 $em->persist($movie);
@@ -280,6 +314,12 @@ class AdminController extends AbstractController
         $errors = [];
 
         if ($request->isMethod('POST')) {
+            // CSRF — every other POST route has one; create/edit must too
+            if (!$this->isCsrfTokenValid('movie_form_' . $movie->getId(), (string) $request->request->get('_token'))) {
+                $this->addFlash('error', 'Security token mismatch — nothing was saved.');
+                return $this->redirectToRoute('app_admin_movies');
+            }
+
             [, $errors] = $this->movieFromRequest($request, $em, $movie);
             if (!$errors) {
                 $em->flush();
@@ -301,6 +341,7 @@ class AdminController extends AbstractController
 
         $em = $doctrine->getManager();
 
+        // children first: credits, watchlist entries, genre links
         foreach ($em->getRepository(MovieCredit::class)->findBy(['movie' => $movie]) as $credit) {
             $em->remove($credit);
         }
@@ -366,6 +407,7 @@ class AdminController extends AbstractController
         $movie->setRating($data['rating'] !== '' ? $data['rating'] : null);
         $movie->setIsPremium($data['is_premium']);
 
+        // tmdb_id is NOT NULL in the DB — auto-fill when the admin leaves it blank
         if ($data['tmdb_id'] !== '') {
             $movie->setTmdbId((int) $data['tmdb_id']);
         } elseif ($movie->getTmdbId() === null) {
@@ -521,7 +563,14 @@ class AdminController extends AbstractController
         ];
     }
 
-    /** @return array{0:string,1:?string,2:?string} [pending, approved, rejected] */
+    /**
+     * The status column may be an ENUM — a column with a closed dictionary.
+     * MySQL error 1265 means "word not in the dictionary", so we READ the
+     * dictionary at runtime and use whichever real words mean pending /
+     * approved / rejected.
+     *
+     * @return array{0:string,1:?string,2:?string} [pending, approved, rejected]
+     */
     private function statusWords(Connection $conn): array
     {
         [$subs, , , $sc] = $this->subsColumns($conn);
@@ -561,15 +610,22 @@ class AdminController extends AbstractController
             return [$pending, $approved, $rejected];
         }
 
+        // plain varchar column — accepts any word
         return ['pending', 'active', 'rejected'];
     }
 
-    /** @return list<string>|null */
+    /**
+     * users.tier may ALSO be an ENUM with its own dictionary (error 1265 on
+     * 'tier' = the same bouncer, different door). Return its real words,
+     * or null when the column is a plain varchar.
+     *
+     * @return list<string>|null
+     */
     private function tierDictionary(Connection $conn, EntityManagerInterface $em): ?array
     {
-        $meta       = $em->getClassMetadata(User::class);
+        $meta      = $em->getClassMetadata(User::class);
         $usersTable = $meta->getTableName();
-        $tierCol    = $meta->getColumnName('tier');
+        $tierCol   = $meta->getColumnName('tier');
 
         $rows = $conn->fetchAllAssociative(
             'SHOW COLUMNS FROM `' . $usersTable . '` LIKE ' . $conn->quote($tierCol)
@@ -588,10 +644,39 @@ class AdminController extends AbstractController
         return array_values(array_filter($values, static fn (string $v): bool => $v !== ''));
     }
 
-    private function tierForPlan(Connection $conn, EntityManagerInterface $em, string $planName): ?string
+    /**
+     * Pick the tier word for a plan, using only words the column actually
+     * accepts. Ladder (first match wins):
+     *
+     *   1. PAID beats NAMED — a plan with a price > 0 IS premium access,
+     *      whatever it's called ("Basic", "Standard", "Cinephile"...), so
+     *      the dictionary's 'premium' word wins. This closes the whole
+     *      "paying member left tier=free" family of bugs.
+     *   2. exact name match ("Premium" → "premium")
+     *   3. a dictionary word inside the plan name ("Premium Monthly" → "premium")
+     *   4. alphanumeric compare
+     *
+     *   No match = null = don't touch the column.
+     */
+    private function tierForPlan(Connection $conn, EntityManagerInterface $em, string $planName, ?string $planPrice = null): ?string
     {
         $dict = $this->tierDictionary($conn, $em);
+
+        // 1) paid plan → premium, if the column knows such a word
+        if ($planPrice !== null && (float) $planPrice > 0) {
+            if ($dict === null) {
+                return 'premium';               // plain varchar column
+            }
+            foreach ($dict as $v) {
+                if (strtolower($v) === 'premium') {
+                    return $v;
+                }
+            }
+            // dictionary has no 'premium' word — fall through to the ladder
+        }
+
         if ($dict === null) {
+            // plain varchar column — cap at the 10-char length the mapping declares
             return rtrim(substr(strtolower($planName), 0, 10)) ?: null;
         }
 
@@ -618,6 +703,7 @@ class AdminController extends AbstractController
         return null;
     }
 
+    /** The word to write when a user is reset to free — null if the dictionary has none. */
     private function freeTierWord(Connection $conn, EntityManagerInterface $em): ?string
     {
         $dict = $this->tierDictionary($conn, $em);
@@ -655,6 +741,7 @@ class AdminController extends AbstractController
         }
         [$pendingWord] = $this->statusWords($conn);
 
+        // ask Doctrine for the REAL users table/column names — never guess the schema
         $userMeta     = $em->getClassMetadata(User::class);
         $usersTable   = $userMeta->getTableName();
         $usersIdCol   = $userMeta->getColumnName('id');
